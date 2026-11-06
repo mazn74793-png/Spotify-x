@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="50%" stop-color="#09090b" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with safe padding -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  
+  <!-- Outer subtle glowing ring -->
+  <circle cx="256" cy="256" r="180" stroke="url(#glowGrad)" stroke-width="4" fill="none" opacity="0.4" />
+  
+  <!-- Audio wave concentric arcs (Spotify-style) -->
+  <path d="M140 210 C 180 175, 332 175, 372 210" stroke="url(#accentGrad)" stroke-width="20" stroke-linecap="round" fill="none" />
+  <path d="M165 255 C 200 228, 312 228, 347 255" stroke="url(#accentGrad)" stroke-width="18" stroke-linecap="round" fill="none" opacity="0.9" />
+  <path d="M190 300 C 215 280, 297 280, 322 300" stroke="url(#accentGrad)" stroke-width="16" stroke-linecap="round" fill="none" opacity="0.8" />
+
+  <!-- Center Download Arrow & Music Note Badge (Snaptube-style) -->
+  <g filter="url(#glow)">
+    <circle cx="256" cy="370" r="54" fill="url(#accentGrad)" />
+    <!-- Download Arrow inside circle -->
+    <path d="M256 345 L256 385 M238 370 L256 388 L274 370 M234 398 L278 398" 
+          stroke="#09090b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "نغمات ميكس - تطبيق الموسيقى والتحميل أوفلاين",
+  "description": "تطبيق موسيقى متكامل مستوحى من سبوتيفاي وسناب تيوب للبحث والاستماع المباشر وتحميل الأغاني بدون إنترنت مع دعم PWA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
