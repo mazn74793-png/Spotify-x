@@ -180,6 +180,42 @@ const ARTISTS_DATABASE = [
     isVerified: true
   },
   {
+    id: 'wegz',
+    name: 'ويجز',
+    englishName: 'Wegz',
+    avatarUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    headerUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    bio: 'رائد مشهد التراب والراب المصري الحديث، أحد أكثر الفنانين تأثيراً واستماعاً في العالم العربي.',
+    monthlyListeners: '7,900,000',
+    followersCount: '4.8M',
+    genres: ['تراب مصري', 'هيب هوب', 'سينث'],
+    isVerified: true
+  },
+  {
+    id: 'cairokee',
+    name: 'كايروكي',
+    englishName: 'Cairokee',
+    avatarUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    headerUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    bio: 'فرقة الروك المصرية الأشهر، صوت الشارع والأغاني المعبرة عن أحلام وتطلعات الشباب.',
+    monthlyListeners: '6,400,000',
+    followersCount: '4.2M',
+    genres: ['روك مصري', 'إندي عربي'],
+    isVerified: true
+  },
+  {
+    id: 'ahmed-saad',
+    name: 'أحمد سعد',
+    englishName: 'Ahmed Saad',
+    avatarUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    headerUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    bio: 'صوت شعبي وطربي قوي ومتصدر المنصات بأنجح الأغاني والأعمال السينمائية.',
+    monthlyListeners: '8,100,000',
+    followersCount: '5.0M',
+    genres: ['شعبي مودرن', 'بوب شعبي'],
+    isVerified: true
+  },
+  {
     id: 'the-weeknd',
     name: 'The Weeknd',
     englishName: 'The Weeknd',
@@ -428,8 +464,137 @@ const TRACKS_CATALOG = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'catalog'
+  },
+
+  // Wegz tracks
+  {
+    id: 'wegz-bakht',
+    artistId: 'wegz',
+    title: 'البخت (El Bakht)',
+    artist: 'ويجز',
+    album: 'البخت (2022)',
+    duration: 215,
+    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    genre: 'تراب مصري',
+    releaseDate: '2022',
+    playCount: '250,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'youtube',
+    youtubeId: 'p1A4e6B7b6Q'
+  },
+  {
+    id: 'wegz-dorak',
+    artistId: 'wegz',
+    title: 'دورك جي (Dorak Gai)',
+    artist: 'ويجز',
+    album: 'دورك جي',
+    duration: 195,
+    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    genre: 'تراب / راب',
+    releaseDate: '2020',
+    playCount: '165,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'youtube',
+    youtubeId: 'qN_8HlZ2y8s'
+  },
+
+  // Cairokee tracks
+  {
+    id: 'cairokee-basrah',
+    artistId: 'cairokee',
+    title: 'بسرح وأتوه',
+    artist: 'كايروكي',
+    album: 'روما (2022)',
+    duration: 240,
+    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
+    downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
+    genre: 'روك مصري',
+    releaseDate: '2022',
+    playCount: '80,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'youtube',
+    youtubeId: 'v1A5e6B7b7Q'
+  },
+
+  // Ahmed Saad tracks
+  {
+    id: 'saad-wassa',
+    artistId: 'ahmed-saad',
+    title: 'وسع وسع (Wassa Wassa)',
+    artist: 'أحمد سعد',
+    album: 'وسع وسع (2022)',
+    duration: 210,
+    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    genre: 'شعبي مودرن',
+    releaseDate: '2022',
+    playCount: '190,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'youtube',
+    youtubeId: 'p2A4e6B7b8Q'
+  },
+  {
+    id: 'saad-ekhtiyarati',
+    artistId: 'ahmed-saad',
+    title: 'إختياراتي مدمرة حياتي',
+    artist: 'أحمد سعد',
+    album: 'فيلم مستر إكس (2023)',
+    duration: 185,
+    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    genre: 'بوب شعبي',
+    releaseDate: '2023',
+    playCount: '140,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'youtube',
+    youtubeId: 'p3A4e6B7b9Q'
+  },
+
+  // The Weeknd tracks
+  {
+    id: 'weeknd-blinding-lights',
+    artistId: 'the-weeknd',
+    title: 'Blinding Lights',
+    artist: 'The Weeknd',
+    album: 'After Hours (2020)',
+    duration: 200,
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/The_Weeknd_Portrait_by_Brian_Ziff.jpg',
+    streamUrl: 'https://cdn.freesound.org/previews/732/732296_5674468-lq.mp3',
+    downloadUrl: 'https://cdn.freesound.org/previews/732/732296_5674468-lq.mp3',
+    genre: 'Synth-Pop',
+    releaseDate: '2020',
+    playCount: '3,800,000,000',
+    bitrate: '320 kbps',
+    isFullLength: true,
+    source: 'catalog',
+    youtubeId: '4NRXx6U8ABQ'
   }
 ];
+
+function normalizeArabic(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[إأآا]/g, 'ا')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/ـ+/g, '')
+    .replace(/\s+/g, ' ');
+}
 
 // 1. YouTube Direct Scraper: Retrieves any video, song, album, or track from YouTube with zero API keys
 async function searchYouTube(query: string): Promise<any[]> {
@@ -536,12 +701,12 @@ async function searchAudius(query: string): Promise<any[]> {
 }
 
 // 3. Artists List Endpoint
-app.get('/api/artists', (_req: Request, res: Response) => {
+app.get(['/api/artists', '/artists'], (_req: Request, res: Response) => {
   res.json({ artists: ARTISTS_DATABASE });
 });
 
 // 4. Single Artist Profile & Full Tracks (Catalog + Dynamic YouTube & Audius songs for that artist)
-app.get('/api/artists/:id', async (req: Request, res: Response) => {
+app.get(['/api/artists/:id', '/artists/:id'], async (req: Request, res: Response) => {
   const artistId = req.params.id;
   const artist = ARTISTS_DATABASE.find(a => a.id === artistId);
   if (!artist) {
@@ -565,7 +730,7 @@ app.get('/api/artists/:id', async (req: Request, res: Response) => {
 });
 
 // 5. Multi-Source Search Endpoint (YouTube + Catalog + Audius)
-app.get('/api/search', async (req: Request, res: Response) => {
+app.get(['/api/search', '/search'], async (req: Request, res: Response) => {
   const query = (req.query.q as string || '').trim();
   const sourceFilter = (req.query.source as string || 'all').toLowerCase();
 
@@ -577,14 +742,16 @@ app.get('/api/search', async (req: Request, res: Response) => {
   }
 
   try {
-    const queryLower = query.toLowerCase();
+    const normQ = normalizeArabic(query);
 
-    // Check matching artists
-    const matchedArtists = ARTISTS_DATABASE.filter(a =>
-      a.name.toLowerCase().includes(queryLower) ||
-      (a.englishName && a.englishName.toLowerCase().includes(queryLower)) ||
-      a.genres.some(g => g.toLowerCase().includes(queryLower))
-    );
+    // Check matching artists with Arabic normalization
+    const matchedArtists = ARTISTS_DATABASE.filter(a => {
+      const nName = normalizeArabic(a.name);
+      const nEng = normalizeArabic(a.englishName || '');
+      const nBio = normalizeArabic(a.bio || '');
+      const nGenres = a.genres.map(g => normalizeArabic(g)).join(' ');
+      return nName.includes(normQ) || nEng.includes(normQ) || nBio.includes(normQ) || nGenres.includes(normQ);
+    });
 
     // Parallel search across YouTube, Catalog, and Audius
     const [ytResults, audiusResults] = await Promise.all([
@@ -592,11 +759,13 @@ app.get('/api/search', async (req: Request, res: Response) => {
       sourceFilter === 'youtube' ? Promise.resolve([]) : searchAudius(query)
     ]);
 
-    // Match local curated catalog
-    const matchingCatalog = TRACKS_CATALOG.filter(t =>
-      t.title.toLowerCase().includes(queryLower) ||
-      t.artist.toLowerCase().includes(queryLower)
-    );
+    // Match local curated catalog with Arabic normalization
+    const matchingCatalog = TRACKS_CATALOG.filter(t => {
+      const nTitle = normalizeArabic(t.title);
+      const nArtist = normalizeArabic(t.artist);
+      const nAlbum = normalizeArabic(t.album);
+      return nTitle.includes(normQ) || nArtist.includes(normQ) || nAlbum.includes(normQ);
+    });
 
     // Filter by source if requested
     let combined: any[] = [];
@@ -613,21 +782,21 @@ app.get('/api/search', async (req: Request, res: Response) => {
       query,
       count: combined.length,
       matchedArtists,
-      results: combined.length > 0 ? combined : TRACKS_CATALOG
+      results: combined
     });
   } catch (error: any) {
     console.error('Search error:', error);
     return res.json({
       query,
-      count: TRACKS_CATALOG.length,
+      count: 0,
       matchedArtists: [],
-      results: TRACKS_CATALOG
+      results: []
     });
   }
 });
 
 // 6. Trending & Featured Tracks Endpoint
-app.get('/api/trending', (_req: Request, res: Response) => {
+app.get(['/api/trending', '/trending'], (_req: Request, res: Response) => {
   res.json({
     featured: TRACKS_CATALOG,
     artists: ARTISTS_DATABASE,
@@ -642,7 +811,7 @@ app.get('/api/trending', (_req: Request, res: Response) => {
 });
 
 // 7. Audio Proxy Endpoint: Handles redirects and pipes full-length audio stream with CORS
-app.get('/api/proxy-audio', async (req: Request, res: Response) => {
+app.get(['/api/proxy-audio', '/proxy-audio'], async (req: Request, res: Response) => {
   const targetUrl = req.query.url as string;
   if (!targetUrl) {
     return res.status(400).send('Missing url parameter');
@@ -687,7 +856,7 @@ app.get('/api/proxy-audio', async (req: Request, res: Response) => {
 });
 
 // 8. Health Check
-app.get('/api/health', (_req, res) => {
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 

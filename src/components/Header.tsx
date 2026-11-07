@@ -92,19 +92,6 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             )}
           </button>
-
-          <button
-            onClick={() => setActiveTab('docs')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all ${
-              activeTab === 'docs'
-                ? 'bg-white text-black font-bold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-            title="دليل التشغيل والاستضافة"
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span>دليل الاستضافة</span>
-          </button>
         </nav>
 
         {/* Right side: Online Status & PWA Install */}

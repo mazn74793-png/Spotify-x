@@ -30,6 +30,8 @@ interface LibraryComponentProps {
   favoriteTracks: Track[];
 }
 
+const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+
 export const LibraryComponent: React.FC<LibraryComponentProps> = ({
   downloadedTracks,
   storageInfo,
@@ -209,13 +211,17 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                   onClick={() => onOpenArtist(artist.id)}
                   className="group rounded-2xl p-4 bg-[#181818] hover:bg-[#282828] transition-all flex flex-col items-center text-center cursor-pointer border border-white/5"
                 >
-                  <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-xl mb-3 group-hover:scale-105 transition-transform bg-zinc-800">
-                    <img
-                      src={artist.avatarUrl}
-                      alt={artist.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                    <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-xl mb-3 group-hover:scale-105 transition-transform bg-zinc-800 ring-2 ring-white/10 group-hover:ring-[#1ed760]/60">
+                      <img
+                        src={artist.avatarUrl || FALLBACK_COVER}
+                        alt={artist.name}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                        }}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
                   <div className="flex items-center gap-1">
                     <h4 className="font-bold text-sm text-white truncate group-hover:text-[#1ed760] transition-colors">
@@ -298,8 +304,12 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                       className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
                     >
                       <img
-                        src={track.coverUrl}
+                        src={track.coverUrl || FALLBACK_COVER}
                         alt={track.title}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                        }}
                         className="w-11 h-11 rounded-lg object-cover shrink-0 shadow"
                       />
                       <div className="min-w-0">
@@ -411,8 +421,12 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                       className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
                     >
                       <img
-                        src={track.coverUrl}
+                        src={track.coverUrl || FALLBACK_COVER}
                         alt={track.title}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                        }}
                         className="w-11 h-11 rounded-lg object-cover shrink-0 shadow"
                       />
                       <div className="min-w-0">
