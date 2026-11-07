@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Track, Artist } from '../types/music';
 import { DEFAULT_TRACKS, DEFAULT_ARTISTS } from '../data/musicData';
 import { 
+  getRecentlyPlayedTracks, 
+  getOnRepeatTracks, 
+  getSmartRecommendations,
+  getUserTasteProfile 
+} from '../services/recommendationEngine';
+import { 
   Play, 
   Download, 
   Check, 
@@ -12,7 +18,9 @@ import {
   Flame,
   Radio,
   Coffee,
-  Disc3
+  Disc3,
+  History,
+  Repeat
 } from 'lucide-react';
 
 interface HomeComponentProps {
@@ -78,11 +86,20 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   onOpenInstallModal,
   onOpenArtist,
 }) => {
-  // Pre-seed with full curated library so it NEVER loads as an empty black box on Vercel or offline
   const [featured, setFeatured] = useState<Track[]>(DEFAULT_TRACKS);
   const [artists, setArtists] = useState<Artist[]>(DEFAULT_ARTISTS);
 
+  // Smart Listening Intelligence State
+  const [recentlyPlayed, setRecentlyPlayed] = useState<Track[]>([]);
+  const [onRepeat, setOnRepeat] = useState<Track[]>([]);
+  const [smartRecs, setSmartRecs] = useState<{ recommended: Track[]; headline: string; subheadline: string }>({
+    recommended: [],
+    headline: 'مبني على ذوقك واستماعك',
+    subheadline: 'أغاني مقترحة تم اختيارها تلقائياً حسب تفضيلاتك'
+  });
+
   useEffect(() => {
+    // 1. Fetch online trending data
     fetch('/api/trending')
       .then(async res => {
         if (!res.ok) return null;
@@ -98,10 +115,18 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
           setArtists(data.artists);
         }
       })
-      .catch(() => {
-        // Safe silent fallback: DEFAULT_TRACKS and DEFAULT_ARTISTS are already active
-      });
-  }, []);
+      .catch(() => {});
+
+    // 2. Load smart personalized recommendations from listening engine
+    const recent = getRecentlyPlayedTracks();
+    setRecentlyPlayed(recent.slice(0, 8));
+
+    const repeat = getOnRepeatTracks();
+    setOnRepeat(repeat.slice(0, 8));
+
+    const recs = getSmartRecommendations(DEFAULT_TRACKS);
+    setSmartRecs(recs);
+  }, [currentTrack]); // refresh recommendations whenever currentTrack changes
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -125,7 +150,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[#1ed760] animate-pulse" />
               <span className="text-xs font-bold text-[#1ed760] tracking-wider uppercase">
-                Spotify Music Experience
+                تجربة استماع مخصصة لك
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -211,7 +236,251 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
         })}
       </div>
 
-      {/* 3. Curated Moods & Playlists Cards */}
+      {/* 3. Smart Intelligence: Recently Played (استمعت إليه مؤخراً) */}
+      {recentlyPlayed.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <span>استمعت إليه مؤخراً</span>
+                <History className="w-5 h-5 text-[#1ed760]" />
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                تابع الاستماع إلى آخر الأغاني التي قمت بتشغيلها
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {recentlyPlayed.map((track) => {
+              const isCurrentPlaying = currentTrack?.id === track.id && isPlaying;
+              const isDownloaded = downloadedIds.has(track.id);
+
+              return (
+                <div
+                  key={`rec-${track.id}`}
+                  onClick={() => onPlayTrack(track, recentlyPlayed)}
+                  className={`group relative p-3.5 rounded-3xl transition-all duration-300 cursor-pointer border flex flex-col justify-between shadow-lg hover:shadow-2xl ${
+                    currentTrack?.id === track.id
+                      ? 'bg-[#222222] border-[#1ed760]/40'
+                      : 'bg-[#181818] hover:bg-[#242424] border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-3 bg-zinc-800 shadow-md">
+                    <img
+                      src={track.coverUrl || FALLBACK_COVER}
+                      alt={track.title}
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+
+                    <div className={`absolute bottom-2.5 left-2.5 transition-all duration-200 ${
+                      isCurrentPlaying ? 'opacity-100 scale-100' : 'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0'
+                    }`}>
+                      <div className="w-10 h-10 rounded-full bg-[#1ed760] text-black shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95">
+                        <Play className="w-4 h-4 fill-black ml-0.5 text-black" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className={`font-bold text-xs sm:text-sm truncate transition-colors ${
+                      currentTrack?.id === track.id ? 'text-[#1ed760]' : 'text-white'
+                    }`}>
+                      {track.title}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                      {track.artist}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDownloadTrack(track);
+                      }}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                      }`}
+                    >
+                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Smart Intelligence: Made For You (مبني على ذوقك) */}
+      {smartRecs.recommended.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <span>{smartRecs.headline}</span>
+                <Sparkles className="w-5 h-5 text-[#1ed760]" />
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                {smartRecs.subheadline}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {smartRecs.recommended.map((track) => {
+              const isCurrentPlaying = currentTrack?.id === track.id && isPlaying;
+              const isDownloaded = downloadedIds.has(track.id);
+
+              return (
+                <div
+                  key={`rec-taste-${track.id}`}
+                  onClick={() => onPlayTrack(track, smartRecs.recommended)}
+                  className={`group relative p-3.5 rounded-3xl transition-all duration-300 cursor-pointer border flex flex-col justify-between shadow-lg hover:shadow-2xl ${
+                    currentTrack?.id === track.id
+                      ? 'bg-[#222222] border-[#1ed760]/40'
+                      : 'bg-[#181818] hover:bg-[#242424] border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-3 bg-zinc-800 shadow-md">
+                    <img
+                      src={track.coverUrl || FALLBACK_COVER}
+                      alt={track.title}
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+
+                    <div className={`absolute bottom-2.5 left-2.5 transition-all duration-200 ${
+                      isCurrentPlaying ? 'opacity-100 scale-100' : 'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0'
+                    }`}>
+                      <div className="w-10 h-10 rounded-full bg-[#1ed760] text-black shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95">
+                        <Play className="w-4 h-4 fill-black ml-0.5 text-black" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className={`font-bold text-xs sm:text-sm truncate transition-colors ${
+                      currentTrack?.id === track.id ? 'text-[#1ed760]' : 'text-white'
+                    }`}>
+                      {track.title}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                      {track.artist}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDownloadTrack(track);
+                      }}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                      }`}
+                    >
+                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 5. Smart Intelligence: On Repeat (الأكثر تكراراً) */}
+      {onRepeat.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <span>الأكثر تكراراً واستماعاً</span>
+                <Repeat className="w-5 h-5 text-[#1ed760]" />
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                أغانيك المفضلة التي قمت بإعادتها أكثر من مرة
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {onRepeat.map((track) => {
+              const isCurrentPlaying = currentTrack?.id === track.id && isPlaying;
+              const isDownloaded = downloadedIds.has(track.id);
+
+              return (
+                <div
+                  key={`repeat-${track.id}`}
+                  onClick={() => onPlayTrack(track, onRepeat)}
+                  className="group relative p-3.5 rounded-3xl transition-all duration-300 cursor-pointer border bg-[#181818] hover:bg-[#242424] border-white/5 hover:border-white/10 flex flex-col justify-between shadow-lg"
+                >
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-3 bg-zinc-800 shadow-md">
+                    <img
+                      src={track.coverUrl || FALLBACK_COVER}
+                      alt={track.title}
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+
+                    <div className="absolute bottom-2.5 left-2.5">
+                      <div className="w-10 h-10 rounded-full bg-[#1ed760] text-black shadow-2xl flex items-center justify-center">
+                        <Play className="w-4 h-4 fill-black ml-0.5 text-black" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm truncate text-white">
+                      {track.title}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                      {track.artist}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDownloadTrack(track);
+                      }}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                      }`}
+                    >
+                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Curated Moods & Playlists Cards */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -262,7 +531,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
         </div>
       </div>
 
-      {/* 4. Popular Artists Section (Circular Avatars with Glow Rings) */}
+      {/* 7. Popular Artists Section (Circular Avatars with Glow Rings) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -319,12 +588,12 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
         </div>
       </div>
 
-      {/* 5. Featured Songs Shelf (Square Cards with Hover Play) */}
+      {/* 8. Featured Songs Shelf (Square Cards with Hover Play) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              المقاطع الكاملة الأكثر رواجاً
+              المقاطع الأكثر رواجاً
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
               استماع مباشر عالي النقاء وتحميل أوفلاين
@@ -355,7 +624,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                 }`}
                 onClick={() => onPlayTrack(track, featured)}
               >
-                {/* Square Card Artwork */}
                 <div className="relative aspect-square rounded-2xl overflow-hidden mb-3 bg-zinc-800 shadow-md">
                   <img
                     src={track.coverUrl || FALLBACK_COVER}
@@ -367,7 +635,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 
-                  {/* Floating Green Play Button on Hover */}
                   <div className={`absolute bottom-2.5 left-2.5 transition-all duration-200 ${
                     isCurrentPlaying ? 'opacity-100 scale-100' : 'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0'
                   }`}>
@@ -377,7 +644,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                   </div>
                 </div>
 
-                {/* Track Details */}
                 <div>
                   <h4 className={`font-bold text-xs sm:text-sm truncate transition-colors ${
                     currentTrack?.id === track.id ? 'text-[#1ed760]' : 'text-white'
@@ -400,7 +666,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                   </p>
                 </div>
 
-                {/* Download Status & Duration */}
                 <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between">
                   <span className="text-[10px] text-zinc-500 font-mono">
                     {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}

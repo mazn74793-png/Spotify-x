@@ -20,6 +20,7 @@ import { PlayerComponent } from './components/PlayerComponent';
 import { ArtistProfileModal } from './components/ArtistProfileModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
 import { OfflineBanner } from './components/OfflineBanner';
+import { recordTrackPlay } from './services/recommendationEngine';
 import confetti from 'canvas-confetti';
 
 export default function App() {
@@ -54,6 +55,12 @@ export default function App() {
     toggleShuffle,
     setTimer,
   } = useAudioPlayer();
+
+  // Smart Play Handler that feeds the recommendation engine
+  const handlePlayTrack = useCallback((track: Track, queue: Track[] = []) => {
+    recordTrackPlay(track);
+    playTrack(track, queue);
+  }, [playTrack]);
 
   // Downloads & IndexedDB State
   const [downloadedTracks, setDownloadedTracks] = useState<DownloadedTrack[]>([]);
@@ -208,7 +215,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 pt-6 pb-24">
         {activeTab === 'home' && (
           <HomeComponent
-            onPlayTrack={playTrack}
+            onPlayTrack={handlePlayTrack}
             currentTrack={currentTrack}
             isPlaying={isPlaying}
             downloadedIds={downloadedIds}
@@ -222,7 +229,7 @@ export default function App() {
 
         {activeTab === 'search' && (
           <SearchComponent
-            onPlayTrack={playTrack}
+            onPlayTrack={handlePlayTrack}
             currentTrack={currentTrack}
             isPlaying={isPlaying}
             downloadedIds={downloadedIds}
@@ -240,7 +247,7 @@ export default function App() {
           <LibraryComponent
             downloadedTracks={downloadedTracks}
             storageInfo={storageInfo}
-            onPlayTrack={playTrack}
+            onPlayTrack={handlePlayTrack}
             currentTrack={currentTrack}
             isPlaying={isPlaying}
             onDeleteTrack={handleDeleteTrack}
@@ -297,7 +304,7 @@ export default function App() {
         <ArtistProfileModal
           artistId={selectedArtistId}
           onClose={() => setSelectedArtistId(null)}
-          onPlayTrack={playTrack}
+          onPlayTrack={handlePlayTrack}
           currentTrack={currentTrack}
           isPlaying={isPlaying}
           downloadedIds={downloadedIds}

@@ -31,22 +31,22 @@ interface SearchComponentProps {
 }
 
 const QUICK_SEARCH_TAGS = [
-  { label: 'عمرو دياب', icon: '🔥' },
-  { label: 'ويجز', icon: '⚡' },
-  { label: 'فيروز', icon: '☕' },
-  { label: 'كايروكي', icon: '🎸' },
-  { label: 'شيرين', icon: '✨' },
-  { label: 'تامر حسني', icon: '🌟' },
-  { label: 'أحمد سعد', icon: '🎉' },
-  { label: 'محمد حماقي', icon: '🎵' },
-  { label: 'أم كلثوم', icon: '👑' },
-  { label: 'إليسا', icon: '💖' },
-  { label: 'The Weeknd', icon: '🌙' },
+  'عمرو دياب',
+  'ويجز',
+  'فيروز',
+  'كايروكي',
+  'شيرين',
+  'تامر حسني',
+  'أحمد سعد',
+  'محمد حماقي',
+  'أم كلثوم',
+  'إليسا',
+  'The Weeknd',
 ];
 
 const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
 
-// 1. Direct Browser Client Fetch for iTunes API (100% Free, CORS Enabled worldwide, Zero Dependencies)
+// 1. Direct Browser Client Fetch for iTunes API (CORS Enabled, Free, Supports every Arabic track)
 async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audius'): Promise<Track[]> {
   try {
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=eg&entity=song&limit=25`;
@@ -80,7 +80,7 @@ async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audi
   }
 }
 
-// 2. Direct Browser Client Fetch for Audius API (100% Free, CORS Enabled, Full Length 320kbps MP3s)
+// 2. Direct Browser Client Fetch for Audius API (CORS Enabled, Full Length 320kbps MP3s)
 async function fetchAudiusDirect(term: string): Promise<Track[]> {
   try {
     const url = `https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(term)}&app_name=NAGHAMAT_APP&limit=15`;
@@ -166,10 +166,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     setLoading(true);
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        // Run all search providers in parallel:
-        // A. Backend API (/api/search)
-        // B. Direct Apple iTunes API (CORS enabled)
-        // C. Direct Audius API (CORS enabled)
         const backendPromise = (async () => {
           try {
             const params = new URLSearchParams();
@@ -202,7 +198,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         ]);
 
         if (searchRequestIdRef.current === currentRequestId) {
-          // Merge and deduplicate all tracks
           const seen = new Set<string>();
           const merged: Track[] = [];
 
@@ -214,24 +209,14 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             }
           };
 
-          // Priority: 
-          // 1. Local curated tracks matching query
           local.results.forEach(addTrack);
-
-          // 2. Backend scraper tracks (YouTube)
           backendData.tracks.forEach(addTrack);
-
-          // 3. Apple iTunes tracks
           itunesTracks.forEach(addTrack);
-
-          // 4. Audius full tracks
           audiusTracks.forEach(addTrack);
 
-          // Filter by source if requested
           let filtered = merged;
           if (source === 'youtube') {
             filtered = merged.filter(t => t.source === 'youtube' || Boolean(t.youtubeId));
-            // If empty, convert matches to playable YouTube tracks
             if (filtered.length === 0 && merged.length > 0) {
               filtered = merged.map(t => ({
                 ...t,
@@ -252,13 +237,11 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             setResults([]);
           }
 
-          // Merge matched artists
           if (backendData.artists.length > 0) {
             setMatchedArtists(backendData.artists);
           } else if (local.matchedArtists.length > 0) {
             setMatchedArtists(local.matchedArtists);
           } else if (itunesTracks.length > 0) {
-            // Synthesize matched artist from iTunes result
             const top = itunesTracks[0];
             setMatchedArtists([{
               id: `artist-${encodeURIComponent(top.artist)}`,
@@ -330,7 +313,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         {/* Search Input Bar */}
         <form onSubmit={handleSubmit} className="relative group">
           <div className="relative flex items-center">
-            {/* Search Icon with Green Highlight */}
             <div className="absolute right-4 text-zinc-400 group-focus-within:text-[#1ed760] transition-colors pointer-events-none">
               <Search className="w-5 h-5" />
             </div>
@@ -339,11 +321,10 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
               type="text"
               value={query}
               onChange={handleInputChange}
-              placeholder="اكتب اسم أغنية، فنان (مثل عمرو دياب، ويجز، فيروز) أو رابط..."
+              placeholder="اكتب اسم أغنية، فنان (مثل عمرو دياب، ويجز، فيروز)..."
               className="w-full bg-[#1e1e1e] hover:bg-[#252525] focus:bg-[#222222] text-white placeholder-zinc-500 rounded-2xl py-4 pr-12 pl-24 text-sm font-semibold outline-none transition-all border border-white/10 focus:border-[#1ed760]/50 shadow-2xl focus:ring-4 focus:ring-[#1ed760]/10"
             />
 
-            {/* Clear button */}
             {query && (
               <button
                 type="button"
@@ -355,7 +336,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
               </button>
             )}
 
-            {/* Submit / Search Button */}
             <button
               type="submit"
               className="absolute left-2.5 bg-[#1ed760] hover:bg-[#1fdf64] active:scale-95 text-black font-black px-4 py-2 rounded-xl text-xs transition-all shadow-lg shadow-green-500/20"
@@ -369,7 +349,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
           </div>
         </form>
 
-        {/* Source Selector Tabs (All / YouTube / MP3) */}
+        {/* Source Selector Tabs (No Emojis) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             type="button"
@@ -381,7 +361,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>✨ الكل (شامل)</span>
+            <span>الكل (شامل)</span>
           </button>
 
           <button
@@ -394,7 +374,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             }`}
           >
             <Tv className="w-3.5 h-3.5" />
-            <span>🔴 يوتيوب (فيديوهات وأغاني)</span>
+            <span>يوتيوب وفيديو</span>
           </button>
 
           <button
@@ -407,33 +387,32 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             }`}
           >
             <Music2 className="w-3.5 h-3.5" />
-            <span>🟢 أغاني كاملة MP3 (أوفلاين)</span>
+            <span>أغاني كاملة MP3 (أوفلاين)</span>
           </button>
         </div>
 
-        {/* Quick Tag Suggestion Chips */}
+        {/* Quick Suggestion Pills (No Emojis) */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {QUICK_SEARCH_TAGS.map((tag) => (
             <button
-              key={tag.label}
+              key={tag}
               onClick={() => {
-                setQuery(tag.label);
-                performSearch(tag.label, sourceFilter);
+                setQuery(tag);
+                performSearch(tag, sourceFilter);
               }}
               className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 border ${
-                query === tag.label
+                query === tag
                   ? 'bg-white text-black font-bold border-white shadow-md'
                   : 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/5 hover:border-white/10'
               }`}
             >
-              <span>{tag.icon}</span>
-              <span>{tag.label}</span>
+              <span>{tag}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* 2. Top Artist Result (Spotify Signature Card) */}
+      {/* 2. Top Artist Result */}
       {matchedArtists.length > 0 && (
         <div className="space-y-3 pt-2">
           <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
@@ -451,7 +430,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                   className="group relative rounded-3xl p-4 sm:p-5 bg-gradient-to-br from-[#1a1a1a] to-[#141414] hover:from-[#222222] hover:to-[#181818] transition-all duration-300 flex flex-col justify-between cursor-pointer border border-white/5 hover:border-white/20 shadow-xl hover:shadow-2xl"
                 >
                   <div className="flex items-center gap-4">
-                    {/* Circular Artist Avatar with Spotify green accent ring */}
                     <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-2xl shrink-0 group-hover:scale-105 transition-transform bg-zinc-800 ring-2 ring-white/10 group-hover:ring-[#1ed760]/60">
                       <img
                         src={artist.avatarUrl || FALLBACK_COVER}
@@ -484,7 +462,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                     </div>
                   </div>
 
-                  {/* Follow Button & Profile link */}
                   <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                     <button
                       onClick={(e) => {
@@ -512,7 +489,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         </div>
       )}
 
-      {/* 3. Track Results (Spotify Style Luxury Table) */}
+      {/* 3. Track Results */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
@@ -562,7 +539,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                       : 'hover:bg-[#1a1a1a] hover:border-white/5'
                   }`}
                 >
-                  {/* Track Number / Soundwave Play Button */}
                   <div 
                     onClick={() => onPlayTrack(track, results)}
                     className="w-8 flex items-center justify-center shrink-0 cursor-pointer"
@@ -579,13 +555,12 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                           {index + 1}
                         </span>
                         <div className="w-7 h-7 rounded-full bg-white text-black hidden group-hover:flex items-center justify-center shadow">
-                          <Play className="w-3.5 h-3.5 fill-black ml-0.5" />
+                          <Play className="w-3.5 h-3.5 fill-black ml-0.5 text-black" />
                         </div>
                       </>
                     )}
                   </div>
 
-                  {/* Artwork + Title */}
                   <div 
                     onClick={() => onPlayTrack(track, results)}
                     className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
@@ -626,7 +601,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                           {track.artist}
                         </p>
 
-                        {/* Source Badges */}
                         {track.source === 'youtube' ? (
                           <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-red-600/20 text-red-400 border border-red-500/20 shrink-0">
                             يوتيوب
@@ -640,14 +614,11 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                     </div>
                   </div>
 
-                  {/* Album Name (hidden on small phones) */}
                   <div className="hidden md:block text-xs text-zinc-400 truncate w-40">
                     {track.album}
                   </div>
 
-                  {/* Actions: Favorite, Download, Duration */}
                   <div className="flex items-center gap-3 shrink-0">
-                    {/* Favorite Button */}
                     <button
                       onClick={() => onToggleFavorite(track)}
                       className={`p-2 rounded-xl transition-all ${
@@ -660,35 +631,22 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                       <Heart className={`w-4 h-4 ${isFav ? 'fill-[#1ed760]' : ''}`} />
                     </button>
 
-                    {/* Download Button */}
-                    {track.source === 'youtube' ? (
-                      <button
-                        onClick={() => {
-                          alert('هذا المقطع مستضاف عبر يوتيوب للبث المباشر ومشاهدة الفيديو بجودة عالية ⚡. للأغاني القابلة للحفظ أوفلاين بدون نت، اضغط على تبويب "أغاني كاملة MP3" بالأعلى!');
-                        }}
-                        title="استماع مباشر عبر يوتيوب"
-                        className="p-2 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-white/5 transition-all"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <button
-                        disabled={isDownloading}
-                        onClick={() => onDownloadTrack(track)}
-                        title={isDownloaded ? 'محفوظ أوفلاين' : 'تحميل أوفلاين'}
-                        className={`p-2 rounded-xl transition-all ${
-                          isDownloaded 
-                            ? 'text-[#1ed760]' 
-                            : isDownloading 
-                            ? 'text-amber-400 animate-spin' 
-                            : 'text-zinc-500 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {isDownloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                      </button>
-                    )}
+                    {/* Download Button - Directly downloads any track including YouTube tracks */}
+                    <button
+                      disabled={isDownloading}
+                      onClick={() => onDownloadTrack(track)}
+                      title={isDownloaded ? 'محفوظ أوفلاين' : 'تحميل أوفلاين'}
+                      className={`p-2 rounded-xl transition-all ${
+                        isDownloaded 
+                          ? 'text-[#1ed760]' 
+                          : isDownloading 
+                          ? 'text-amber-400 animate-spin' 
+                          : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      {isDownloaded ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                    </button>
 
-                    {/* Duration */}
                     <span className="text-xs font-mono text-zinc-400 w-12 text-left">
                       {formatDuration(track.duration)}
                     </span>

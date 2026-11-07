@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Smartphone, Download, Share, PlusSquare, CheckCircle, ExternalLink } from 'lucide-react';
+import { X, Smartphone, Download, Share, PlusSquare, CheckCircle, ExternalLink, Music } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface PWAInstallModalProps {
@@ -37,7 +37,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-400 p-[2px] shadow-lg shadow-amber-500/20 shrink-0">
             <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center">
-              <span className="text-2xl">🎵</span>
+              <Music className="w-6 h-6 text-[#1ed760]" />
             </div>
           </div>
           <div>

@@ -57,7 +57,7 @@ export const FavoritesComponent: React.FC<FavoritesComponentProps> = ({
             لا توجد أغانٍ مفضلة بعد
           </h3>
           <p className="text-sm text-zinc-400 max-w-md mx-auto mb-6">
-            اضغط على علامة القلب (❤️) بجانب أي أغنية لإضافتها إلى قائمتك المفضلة.
+            اضغط على أيقونة الإعجاب بجانب أي أغنية لإضافتها إلى قائمتك المفضلة.
           </p>
           <button
             onClick={onGoToSearch}

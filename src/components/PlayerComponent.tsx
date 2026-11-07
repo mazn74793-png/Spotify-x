@@ -168,10 +168,6 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   };
 
   const handleDownloadClick = () => {
-    if (isYouTube) {
-      alert('هذا المقطع مستضاف عبر يوتيوب للبث المباشر ومشاهدة الفيديو بجودة عالية ⚡. للأغاني القابلة للحفظ أوفلاين كملف صوتي بدون نت، تصفح تبويب "أغاني كاملة MP3" في صفحة البحث!');
-      return;
-    }
     onDownloadTrack(currentTrack);
   };
 
@@ -464,11 +460,11 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
             <div className="text-center">
               <p className="text-[11px] uppercase tracking-wider text-[#1ed760] font-bold">
                 {isOfflinePlaying 
-                  ? 'تشغيل أوفلاين (بدون إنترنت) ⚡' 
+                  ? 'تشغيل أوفلاين (بدون إنترنت)' 
                   : isYouTube
-                  ? 'بث فوري عبر يوتيوب HD 🎬'
+                  ? 'بث فوري عبر يوتيوب HD'
                   : currentTrack.isFullLength !== false 
-                  ? 'تشغيل أغنية كاملة 320kbps ⚡' 
+                  ? 'تشغيل أغنية كاملة 320kbps' 
                   : 'معاينة مقطع صوتي'}
               </p>
               <h3 className="text-xs text-zinc-400 truncate max-w-xs mt-0.5">
@@ -736,8 +732,8 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                 )}
               </button>
 
-              {/* Export MP3 to device storage (Snaptube feature for cached tracks) */}
-              {!isYouTube && (
+              {/* Export MP3 to device storage (Snaptube feature for downloaded tracks) */}
+              {isDownloaded && (
                 <button
                   onClick={() => exportAudioToDevice(currentTrack)}
                   title="حفظ ملف MP3 إلى مجلد التنزيلات بالجهاز"

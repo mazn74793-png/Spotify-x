@@ -8,10 +8,10 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
-        console.log('✅ Service Worker registered successfully, scope:', registration.scope);
+        console.log('[SW] Service Worker registered successfully, scope:', registration.scope);
       })
       .catch((error) => {
-        console.warn('⚠️ Service Worker registration failed:', error);
+        console.warn('[SW] Service Worker registration failed:', error);
       });
   });
 }

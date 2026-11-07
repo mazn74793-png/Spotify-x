@@ -37,8 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => setActiveTab('home')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-9 h-9 rounded-full bg-[#1ed760] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-green-500/20 group-hover:scale-105 transition-transform">
-            <span>♫</span>
+          <div className="w-9 h-9 rounded-full bg-[#1ed760] flex items-center justify-center text-black font-black shadow-lg shadow-green-500/20 group-hover:scale-105 transition-transform">
+            <Library className="w-4 h-4 text-black fill-black" />
           </div>
 
           <div>
