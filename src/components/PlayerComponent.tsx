@@ -18,7 +18,9 @@ import {
   Moon, 
   ChevronDown,
   Tv,
-  Disc
+  Disc,
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import { exportAudioToDevice } from '../services/db';
 
@@ -49,6 +51,8 @@ interface PlayerComponentProps {
   onOpenArtist?: (artistId: string) => void;
 }
 
+const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+
 export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   currentTrack,
   isPlaying,
@@ -77,12 +81,13 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSleepMenu, setShowSleepMenu] = useState(false);
-  const [videoMode, setVideoMode] = useState(false);
+  const [videoMode, setVideoMode] = useState(true); // Default to video preview for YouTube so it doesn't freeze on mobile
+  const [iframeKey, setIframeKey] = useState(0);
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const isYouTube = Boolean(currentTrack?.source === 'youtube' || currentTrack?.youtubeId);
 
-  // Sync play / pause state to YouTube iframe if current track is YouTube
+  // Sync play / pause state to YouTube iframe
   useEffect(() => {
     if (!isYouTube || !ytIframeRef.current) return;
     try {
@@ -120,6 +125,28 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     }
   }, [volume, isMuted, isYouTube]);
 
+  // Listen for YouTube player state changes (e.g. video ended -> playNext)
+  useEffect(() => {
+    if (!isYouTube) return;
+
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        if (data && data.event === 'onStateChange') {
+          // 0 = ended, 1 = playing, 2 = paused
+          if (data.info === 0) {
+            onNext();
+          }
+        }
+      } catch {
+        // Ignore non-json messages
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isYouTube, onNext]);
+
   if (!currentTrack) return null;
 
   const isDownloaded = downloadedIds.has(currentTrack.id);
@@ -142,10 +169,14 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
   const handleDownloadClick = () => {
     if (isYouTube) {
-      alert('هذا المقطع يتم تشغيله مباشرة عبر يوتيوب (بث فوري وفيديو كليب 🎬). للتحميل بدون إنترنت كملف صوتي أوفلاين، تفضل بزيارة تبويب "أغاني كاملة MP3"!');
+      alert('هذا المقطع مستضاف عبر يوتيوب للبث المباشر ومشاهدة الفيديو بجودة عالية ⚡. للأغاني القابلة للحفظ أوفلاين كملف صوتي بدون نت، تصفح تبويب "أغاني كاملة MP3" في صفحة البحث!');
       return;
     }
     onDownloadTrack(currentTrack);
+  };
+
+  const reloadIframe = () => {
+    setIframeKey(prev => prev + 1);
   };
 
   const formatTime = (secs: number) => {
@@ -156,30 +187,43 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const youtubeUrl = currentTrack.youtubeId ? `https://www.youtube.com/watch?v=${currentTrack.youtubeId}` : null;
 
   return (
     <>
-      {/* Invisible YouTube IFrame Engine: remains mounted across mini & expanded player */}
+      {/* 1. SINGLE PERSISTENT YOUTUBE IFRAME (Prevents mobile iOS Safari / Android throttling) */}
       {isYouTube && currentTrack.youtubeId && (
         <div
-          className={
-            isExpanded && videoMode
-              ? 'hidden' // When expanded & in videoMode, the visible frame in the modal handles display
-              : 'fixed -top-[9999px] -left-[9999px] w-80 h-48 opacity-0 pointer-events-none'
-          }
+          className={`transition-all duration-300 z-50 ${
+            isExpanded
+              ? videoMode
+                ? 'fixed top-24 left-1/2 -translate-x-1/2 w-[90%] max-w-lg aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black pointer-events-auto'
+                : 'fixed top-0 left-0 w-1 h-1 opacity-[0.01] pointer-events-none'
+              : 'fixed bottom-16 right-4 sm:right-8 w-28 sm:w-36 aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black pointer-events-auto'
+          }`}
         >
           <iframe
-            ref={videoMode && isExpanded ? null : ytIframeRef}
-            src={`https://www.youtube-nocookie.com/embed/${currentTrack.youtubeId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0`}
+            ref={ytIframeRef}
+            key={`${currentTrack.youtubeId}-${iframeKey}`}
+            src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0`}
             title={currentTrack.title}
-            allow="autoplay; encrypted-media; picture-in-picture"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             className="w-full h-full border-0"
           />
+
+          {/* Mini overlay when playing in bottom bar */}
+          {!isExpanded && (
+            <div 
+              onClick={() => setIsExpanded(true)}
+              className="absolute inset-0 bg-transparent cursor-pointer"
+              title="توسيع المشغل"
+            />
+          )}
         </div>
       )}
 
-      {/* 1. Bottom Sticky Mini Player Bar (Spotify Style) */}
-      <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-40 bg-[#181818] border-t border-white/10 shadow-2xl">
+      {/* 2. Bottom Sticky Mini Player Bar (Spotify Style) */}
+      <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-40 bg-[#181818] border-t border-white/10 shadow-2xl safe-area-bottom">
         {/* Top Slim Progress Bar for Mini Player */}
         <div 
           className="relative h-1 w-full bg-[#3e3e3e] cursor-pointer group"
@@ -204,12 +248,16 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
           {/* Left / Track Info & Cover */}
           <div 
             onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-3 min-w-0 cursor-pointer group max-w-[40%] sm:max-w-[30%]"
+            className="flex items-center gap-3 min-w-0 cursor-pointer group max-w-[45%] sm:max-w-[30%]"
           >
             <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-zinc-950 shrink-0 border border-zinc-800 shadow-md group-hover:scale-105 transition-transform">
               <img
-                src={currentTrack.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80'}
+                src={currentTrack.coverUrl || FALLBACK_COVER}
                 alt={currentTrack.title}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                }}
                 className="w-full h-full object-cover"
               />
               {isPlaying && (
@@ -220,7 +268,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
             </div>
 
             <div className="min-w-0">
-              <h4 className="font-bold text-sm text-white truncate group-hover:text-[#1ed760] transition-colors">
+              <h4 className="font-bold text-xs sm:text-sm text-white truncate group-hover:text-[#1ed760] transition-colors">
                 {currentTrack.title}
               </h4>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -231,7 +279,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                       onOpenArtist(currentTrack.artistId);
                     }
                   }}
-                  className={`text-xs text-zinc-400 truncate ${currentTrack.artistId ? 'hover:underline hover:text-white' : ''}`}
+                  className={`text-[11px] text-zinc-400 truncate ${currentTrack.artistId ? 'hover:underline hover:text-white' : ''}`}
                 >
                   {currentTrack.artist}
                 </p>
@@ -323,6 +371,17 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
           {/* Right Actions: Download, Volume, Expand */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick reload button if YouTube hangs on mobile */}
+            {isYouTube && (
+              <button
+                onClick={reloadIframe}
+                title="إعادة تحميل البث إذا علّق"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-amber-400 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Download Button in Player */}
             <button
               disabled={isDownloading}
@@ -384,7 +443,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
         </div>
       </div>
 
-      {/* 2. Expandable Full-Screen Spotify-Style Player Modal */}
+      {/* 3. Expandable Full-Screen Spotify-Style Player Modal */}
       {isExpanded && (
         <div className="fixed inset-0 z-50 bg-[#121212]/98 backdrop-blur-3xl overflow-y-auto flex flex-col justify-between p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-200">
           
@@ -463,23 +522,12 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
             </div>
           </div>
 
-          {/* Central Artwork Presentation OR YouTube Video */}
+          {/* Central Artwork Presentation / Video Area */}
           <div className="max-w-md mx-auto w-full my-auto flex flex-col items-center text-center">
             
             {/* Mode Switcher for YouTube Tracks (Cover Art vs Video Clip) */}
             {isYouTube && (
-              <div className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10 mb-3 shadow-inner">
-                <button
-                  onClick={() => setVideoMode(false)}
-                  className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    !videoMode 
-                      ? 'bg-white text-black shadow' 
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Disc className="w-3.5 h-3.5" />
-                  <span>غلاف الألبوم</span>
-                </button>
+              <div className="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-white/10 mb-4 shadow-inner">
                 <button
                   onClick={() => setVideoMode(true)}
                   className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
@@ -491,22 +539,22 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                   <Tv className="w-3.5 h-3.5" />
                   <span>مشاهدة الفيديو</span>
                 </button>
+                <button
+                  onClick={() => setVideoMode(false)}
+                  className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    !videoMode 
+                      ? 'bg-white text-black shadow' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Disc className="w-3.5 h-3.5" />
+                  <span>غلاف الألبوم</span>
+                </button>
               </div>
             )}
 
-            {/* Video View */}
-            {isYouTube && videoMode ? (
-              <div className="w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 my-4 bg-black">
-                <iframe
-                  ref={ytIframeRef}
-                  src={`https://www.youtube-nocookie.com/embed/${currentTrack.youtubeId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0`}
-                  title={currentTrack.title}
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  className="w-full h-full border-0"
-                />
-              </div>
-            ) : (
-              /* Artwork View with Spotify Ambient Glow */
+            {/* Cover Artwork (shown when not in videoMode or not a YouTube track) */}
+            {(!isYouTube || !videoMode) && (
               <div className="relative w-64 h-64 sm:w-80 sm:h-80 my-4">
                 <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-[#1ed760]/20 via-blue-500/10 to-transparent blur-2xl" />
 
@@ -514,13 +562,22 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                   isPlaying ? 'ring-4 ring-[#1ed760]/20' : ''
                 }`}>
                   <img
-                    src={currentTrack.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80'}
+                    src={currentTrack.coverUrl || FALLBACK_COVER}
                     alt={currentTrack.title}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                    }}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
               </div>
+            )}
+
+            {/* Video Placeholder space when videoMode is active (the iframe is positioned above) */}
+            {isYouTube && videoMode && (
+              <div className="w-full aspect-video my-4 rounded-2xl opacity-0 pointer-events-none" />
             )}
 
             {/* Title & Artist */}
@@ -542,10 +599,29 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                 {currentTrack.artist}
               </p>
 
-              {currentTrack.genre && (
-                <span className="inline-block mt-2 text-xs text-[#1ed760] bg-[#1ed760]/10 border border-[#1ed760]/20 px-3 py-0.5 rounded-full font-bold">
-                  {currentTrack.genre}
-                </span>
+              {/* YouTube Helper Actions */}
+              {isYouTube && (
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <button
+                    onClick={reloadIframe}
+                    className="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 flex items-center gap-1.5 transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                    <span>إعادة تحميل البث</span>
+                  </button>
+
+                  {youtubeUrl && (
+                    <a
+                      href={youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs px-3 py-1 rounded-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 flex items-center gap-1.5 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>فتح في تطبيق YouTube</span>
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           </div>

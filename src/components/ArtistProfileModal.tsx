@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Artist, Track } from '../types/music';
+import { getLocalArtistProfile } from '../data/musicData';
 import { 
   Play, 
   Pause, 
@@ -53,14 +54,32 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
   useEffect(() => {
     if (!artistId) return;
 
-    setLoading(true);
+    // Load initial data immediately from local cache so screen never blinks or shows empty
+    const local = getLocalArtistProfile(artistId);
+    if (local) {
+      setArtist(local.artist);
+      setTracks(local.tracks);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     fetch(`/api/artists/${artistId}`)
-      .then(r => r.json())
-      .then(data => {
-        setArtist(data.artist || null);
-        setTracks(data.tracks || []);
+      .then(async r => {
+        if (!r.ok) return null;
+        const ct = r.headers.get('content-type');
+        if (!ct || !ct.includes('application/json')) return null;
+        return r.json();
       })
-      .catch(console.error)
+      .then(data => {
+        if (data?.artist) {
+          setArtist(data.artist);
+          setTracks(data.tracks || []);
+        }
+      })
+      .catch((err) => {
+        console.warn('Network fetch artist profile error:', err);
+      })
       .finally(() => setLoading(false));
   }, [artistId]);
 

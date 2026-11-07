@@ -54,6 +54,8 @@ export function useAudioPlayer() {
     };
 
     const handleError = () => {
+      // Ignore if element is unloaded or has no valid src
+      if (!audio.getAttribute('src')) return;
       setIsLoading(false);
       setIsPlaying(false);
       console.warn('Audio playback error occurred.');
@@ -78,7 +80,8 @@ export function useAudioPlayer() {
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
-      audio.src = '';
+      audio.removeAttribute('src');
+      audio.load();
     };
   }, []);
 
@@ -163,10 +166,11 @@ export function useAudioPlayer() {
     const isYT = track.source === 'youtube' || Boolean(track.youtubeId);
 
     if (isYT) {
-      // Pause HTML5 audio if it was running
+      // Pause HTML5 audio if it was running cleanly
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = '';
+        audioRef.current.removeAttribute('src');
+        audioRef.current.load();
       }
       setIsOfflinePlaying(false);
       setCurrentTrack(track);
@@ -199,11 +203,17 @@ export function useAudioPlayer() {
       }
     }
 
+    // If external online audio, proxy it through /api/proxy-audio to guarantee valid CORS and audio/mpeg headers
+    let effectiveUrl = playbackSource;
+    if (!isLocal && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:')) {
+      effectiveUrl = `/api/proxy-audio?url=${encodeURIComponent(effectiveUrl)}`;
+    }
+
     setIsOfflinePlaying(isLocal);
     setCurrentTrack(track);
 
-    if (audioRef.current) {
-      audioRef.current.src = playbackSource;
+    if (audioRef.current && effectiveUrl) {
+      audioRef.current.src = effectiveUrl;
       audioRef.current.load();
 
       audioRef.current.play().then(() => {

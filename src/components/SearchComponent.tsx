@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Track, Artist } from '../types/music';
+import { searchLocalMusic } from '../data/musicData';
 import { 
   Search, 
   X, 
@@ -65,7 +66,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     fetchResults('', sourceFilter);
   }, [sourceFilter]);
 
-  const fetchResults = async (searchTerm: string, source: string = sourceFilter) => {
+  const fetchResults = async (searchTerm: string, source: 'all' | 'youtube' | 'audius' = sourceFilter) => {
     setLoading(true);
     try {
       const q = searchTerm.trim();
@@ -75,12 +76,29 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
 
       const url = `/api/search?${params.toString()}`;
       const res = await fetch(url);
-      const data = await res.json();
-      setResults(data.results || []);
-      setMatchedArtists(data.matchedArtists || []);
+      if (res.ok) {
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data && (data.results?.length || data.matchedArtists?.length)) {
+            setResults(data.results || []);
+            setMatchedArtists(data.matchedArtists || []);
+            setSearched(Boolean(q));
+            return;
+          }
+        }
+      }
+      // Offline / Vercel fallback
+      const local = searchLocalMusic(searchTerm, source);
+      setResults(local.results);
+      setMatchedArtists(local.matchedArtists);
       setSearched(Boolean(q));
     } catch (err) {
-      console.error('Failed to search tracks:', err);
+      console.warn('Network search error, using local database fallback:', err);
+      const local = searchLocalMusic(searchTerm, source);
+      setResults(local.results);
+      setMatchedArtists(local.matchedArtists);
+      setSearched(Boolean(searchTerm.trim()));
     } finally {
       setLoading(false);
     }

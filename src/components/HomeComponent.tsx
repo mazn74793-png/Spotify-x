@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Track, Artist } from '../types/music';
+import { DEFAULT_TRACKS, DEFAULT_ARTISTS } from '../data/musicData';
 import { 
   Play, 
   Download, 
   Check, 
-  Heart, 
   ArrowLeft,
   BadgeCheck,
   Smartphone
@@ -22,6 +22,8 @@ interface HomeComponentProps {
   onOpenArtist: (artistId: string) => void;
 }
 
+const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+
 export const HomeComponent: React.FC<HomeComponentProps> = ({
   onPlayTrack,
   currentTrack,
@@ -29,21 +31,32 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   downloadedIds,
   onDownloadTrack,
   onGoToSearch,
-  onGoToLibrary,
   onOpenInstallModal,
   onOpenArtist,
 }) => {
-  const [featured, setFeatured] = useState<Track[]>([]);
-  const [artists, setArtists] = useState<Artist[]>([]);
+  // Pre-seed with full curated library so it NEVER loads as an empty black box on Vercel or offline
+  const [featured, setFeatured] = useState<Track[]>(DEFAULT_TRACKS);
+  const [artists, setArtists] = useState<Artist[]>(DEFAULT_ARTISTS);
 
   useEffect(() => {
     fetch('/api/trending')
-      .then(r => r.json())
-      .then(data => {
-        setFeatured(data.featured || []);
-        setArtists(data.artists || []);
+      .then(async res => {
+        if (!res.ok) return null;
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) return null;
+        return res.json();
       })
-      .catch(console.error);
+      .then(data => {
+        if (data?.featured?.length) {
+          setFeatured(data.featured);
+        }
+        if (data?.artists?.length) {
+          setArtists(data.artists);
+        }
+      })
+      .catch(() => {
+        // Safe silent fallback: DEFAULT_TRACKS and DEFAULT_ARTISTS are already active
+      });
   }, []);
 
   const getGreeting = () => {
@@ -70,10 +83,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
 
         <button
           onClick={onOpenInstallModal}
-          className="text-xs font-bold px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center gap-1.5"
+          className="text-xs font-bold px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center gap-1.5 active:scale-95 shadow"
         >
-          <Smartphone className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">تثبيت التطبيق</span>
+          <Smartphone className="w-3.5 h-3.5 text-[#1ed760]" />
+          <span>تثبيت التطبيق</span>
         </button>
       </div>
 
@@ -91,6 +104,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
               <img
                 src={track.coverUrl}
                 alt={track.title}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                }}
                 className="w-14 h-14 sm:w-16 sm:h-16 object-cover shrink-0 shadow"
               />
 
@@ -152,6 +169,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                 <img
                   src={artist.avatarUrl}
                   alt={artist.name}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                  }}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -210,6 +231,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                   <img
                     src={track.coverUrl}
                     alt={track.title}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
 
