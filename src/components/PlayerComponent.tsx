@@ -192,7 +192,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   return (
     <>
       {/* 1. SINGLE PERSISTENT YOUTUBE IFRAME (Prevents mobile iOS Safari / Android throttling) */}
-      {isYouTube && currentTrack.youtubeId && (
+      {isYouTube && (
         <div
           className={`transition-all duration-300 z-50 ${
             isExpanded
@@ -204,8 +204,12 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
         >
           <iframe
             ref={ytIframeRef}
-            key={`${currentTrack.youtubeId}-${iframeKey}`}
-            src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0`}
+            key={`${currentTrack.youtubeId || currentTrack.id}-${iframeKey}`}
+            src={
+              currentTrack.youtubeId
+                ? `https://www.youtube.com/embed/${currentTrack.youtubeId}?enablejsapi=1&autoplay=1&playsinline=1&rel=0`
+                : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(currentTrack.artist + ' ' + currentTrack.title)}&enablejsapi=1&autoplay=1&playsinline=1&rel=0`
+            }
             title={currentTrack.title}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             className="w-full h-full border-0"
