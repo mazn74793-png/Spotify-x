@@ -140,9 +140,9 @@ export default async function handler(req: any, res: any) {
           genre: item.primaryGenreName || 'أغنية كاملة',
           releaseDate: (item.releaseDate || '').split('T')[0] || '2024',
           playCount: `${Math.floor(Math.random() * 80 + 20)},000`,
-          bitrate: '320 kbps',
+          bitrate: 'Full Audio HD',
           isFullLength: true,
-          source: 'catalog'
+          source: 'youtube'
         }));
       }
     }

@@ -147,7 +147,19 @@ export function useAudioPlayer() {
     };
 
     const handleError = () => {
-      if (!audio.getAttribute('src')) return;
+      const src = audio.getAttribute('src');
+      if (!src) return;
+      if (src.includes('/api/proxy-audio')) {
+        const match = src.match(/url=([^&]+)/);
+        if (match && match[1]) {
+          const directUrl = decodeURIComponent(match[1]);
+          console.warn('Proxy audio error, switching to direct URL:', directUrl);
+          audio.src = directUrl;
+          audio.load();
+          audio.play().catch(() => {});
+          return;
+        }
+      }
       setIsLoading(false);
       setIsPlaying(false);
     };
@@ -237,7 +249,7 @@ export function useAudioPlayer() {
     }
   }, [currentTrack, isPlaying, duration, currentTime]);
 
-  // Sleep Timer countdown
+  // Timer countdown for sleep timer
   useEffect(() => {
     if (!sleepTimerEndTime) return;
 
@@ -257,6 +269,8 @@ export function useAudioPlayer() {
 
     return () => clearInterval(interval);
   }, [sleepTimerEndTime]);
+
+
 
   const setTimer = (minutes: number | null) => {
     if (!minutes) {
@@ -302,12 +316,13 @@ export function useAudioPlayer() {
     }
 
     // 100% Full-Length Playback & Mobile Lockscreen Carrier
-    // Never fallback to 30s clips. For YouTube tracks, use a silent carrier loop
-    // so mobile browsers (iOS Safari & Android Chrome) keep the audio session & lockscreen controls active!
+    // If the track has a real audio stream, play the real audio!
+    // Only if the track has NO audio stream at all and is YouTube, use a silent carrier loop
+    // so mobile browsers keep the lockscreen controls active while YouTube plays!
     const SILENT_CARRIER = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
-    if (isYT && !isLocal) {
-      // Use silent background carrier so lockscreen session never disconnects
+    if (!playbackSource && isYT) {
+      // Use silent background carrier only when track has NO direct audio stream
       playbackSource = SILENT_CARRIER;
     }
 
@@ -323,11 +338,7 @@ export function useAudioPlayer() {
 
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
-      if (effectiveUrl === SILENT_CARRIER) {
-        audioRef.current.loop = true;
-      } else {
-        audioRef.current.loop = false;
-      }
+      audioRef.current.loop = effectiveUrl === SILENT_CARRIER;
       audioRef.current.load();
 
       // Resume Web Audio Context if suspended
@@ -340,6 +351,12 @@ export function useAudioPlayer() {
         setIsLoading(false);
       }).catch(err => {
         console.warn('Audio auto-play notice:', err);
+        // Fallback: If proxy failed, try playing direct audio URL
+        if (effectiveUrl.includes('/api/proxy-audio') && playbackSource && audioRef.current) {
+          audioRef.current.src = playbackSource;
+          audioRef.current.load();
+          audioRef.current.play().catch(() => {});
+        }
         setIsPlaying(true);
         setIsLoading(false);
       });
@@ -444,6 +461,23 @@ export function useAudioPlayer() {
     setQueueIndex(prevIndex);
     playTrack(queue[prevIndex]);
   }, [queue, queueIndex, currentTime, playTrack]);
+
+  // Progression timer for YouTube/silent carrier tracks
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      if (audioRef.current && (!audioRef.current.src || audioRef.current.src.startsWith('data:'))) {
+        setCurrentTime(prev => {
+          if (duration > 0 && prev >= duration) {
+            playNext();
+            return 0;
+          }
+          return prev + 1;
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlaying, duration, playNext]);
 
   return {
     currentTrack,

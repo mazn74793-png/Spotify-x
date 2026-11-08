@@ -82,14 +82,24 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   const [showSleepMenu, setShowSleepMenu] = useState(false);
   const [videoMode, setVideoMode] = useState(false); // Default to Audio Mode for lockscreen & background play
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
-
+  const hasAudioStream = Boolean(currentTrack?.streamUrl) || Boolean((currentTrack as any)?.localAudioUrl);
   const isYouTube = Boolean(currentTrack?.source === 'youtube' || currentTrack?.youtubeId);
+
+  // Auto-switch mode based on available streams
+  useEffect(() => {
+    if (!hasAudioStream && isYouTube) {
+      setVideoMode(true);
+    } else {
+      setVideoMode(false);
+    }
+  }, [currentTrack?.id, hasAudioStream, isYouTube]);
 
   // Sync play / pause state to YouTube iframe
   useEffect(() => {
     if (!isYouTube || !ytIframeRef.current) return;
     try {
-      const command = isPlaying ? 'playVideo' : 'pauseVideo';
+      const shouldPlayYouTube = isPlaying && (videoMode || !hasAudioStream);
+      const command = shouldPlayYouTube ? 'playVideo' : 'pauseVideo';
       ytIframeRef.current.contentWindow?.postMessage(
         JSON.stringify({ event: 'command', func: command, args: '' }),
         '*'
@@ -97,7 +107,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     } catch {
       // Ignore cross-origin warnings
     }
-  }, [isPlaying, isYouTube]);
+  }, [isPlaying, isYouTube, videoMode, hasAudioStream]);
 
   // Sync volume & mute to YouTube iframe
   useEffect(() => {
@@ -447,7 +457,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
             {isYouTube && (
               <div 
                 className={`absolute inset-0 w-full h-full transition-opacity duration-200 ${
-                  videoMode ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                  videoMode || !hasAudioStream ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
                 <iframe
@@ -461,10 +471,10 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               </div>
             )}
 
-            {/* 2. Authentic Artwork (Visible in Audio Mode or for non-YouTube tracks) */}
+            {/* 2. Authentic Artwork (Visible in Audio Mode when audio stream exists) */}
             <div 
               className={`relative w-full h-full transition-opacity duration-200 ${
-                !videoMode || !isYouTube ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
+                !videoMode && hasAudioStream ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
               }`}
             >
               <img 
