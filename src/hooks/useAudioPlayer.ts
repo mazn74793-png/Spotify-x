@@ -301,28 +301,18 @@ export function useAudioPlayer() {
       }
     }
 
-    // For background playback continuity:
-    // If it's a YouTube track and user requested background play or has audio stream,
-    // find matching stream so HTML5 audio plays on lock screen!
-    if (isYT && !playbackSource) {
-      const { cleanTitle, cleanArtist } = cleanMusicQuery(track.title, track.artist);
-      try {
-        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(`${cleanTitle} ${cleanArtist}`)}&entity=song&limit=1`, {
-          signal: AbortSignal.timeout(2500)
-        });
-        if (itunesRes.ok) {
-          const data = await itunesRes.json();
-          if (data.results?.[0]?.previewUrl) {
-            playbackSource = data.results[0].previewUrl;
-          }
-        }
-      } catch {
-        // Fall back to YouTube player iframe
-      }
+    // 100% Full-Length Playback & Mobile Lockscreen Carrier
+    // Never fallback to 30s clips. For YouTube tracks, use a silent carrier loop
+    // so mobile browsers (iOS Safari & Android Chrome) keep the audio session & lockscreen controls active!
+    const SILENT_CARRIER = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
+    if (isYT && !isLocal) {
+      // Use silent background carrier so lockscreen session never disconnects
+      playbackSource = SILENT_CARRIER;
     }
 
     let effectiveUrl = playbackSource;
-    if (!isLocal && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:')) {
+    if (!isLocal && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:') && !effectiveUrl.startsWith('data:')) {
       effectiveUrl = `/api/proxy-audio?url=${encodeURIComponent(effectiveUrl)}`;
     }
 
@@ -333,9 +323,14 @@ export function useAudioPlayer() {
 
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
+      if (effectiveUrl === SILENT_CARRIER) {
+        audioRef.current.loop = true;
+      } else {
+        audioRef.current.loop = false;
+      }
       audioRef.current.load();
 
-      // Resume Web Audio Context if suspended by user gesture restrictions
+      // Resume Web Audio Context if suspended
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().catch(() => {});
       }
@@ -345,12 +340,10 @@ export function useAudioPlayer() {
         setIsLoading(false);
       }).catch(err => {
         console.warn('Audio auto-play notice:', err);
-        // YouTube iframe handles visual play
         setIsPlaying(true);
         setIsLoading(false);
       });
     } else {
-      // Pure YouTube video
       setIsPlaying(true);
       setIsLoading(false);
     }

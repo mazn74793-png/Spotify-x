@@ -30,7 +30,7 @@ interface LibraryComponentProps {
   favoriteTracks: Track[];
 }
 
-const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
 
 export const LibraryComponent: React.FC<LibraryComponentProps> = ({
   downloadedTracks,

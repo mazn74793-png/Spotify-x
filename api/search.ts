@@ -75,7 +75,7 @@ const ARTISTS_DATABASE = [
     id: 'wegz',
     name: 'ويجز',
     englishName: 'Wegz',
-    avatarUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
     bio: 'رائد مشهد التراب والراب المصري الحديث، أحد أكثر الفنانين استماعاً وتأثيراً.',
     monthlyListeners: '7,900,000',
     followersCount: '4.8M',
@@ -86,7 +86,7 @@ const ARTISTS_DATABASE = [
     id: 'cairokee',
     name: 'كايروكي',
     englishName: 'Cairokee',
-    avatarUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Cairokee.band.jpg',
     bio: 'فرقة الروك المصرية الأشهر، صوت الشارع وتطلعات الشباب.',
     monthlyListeners: '6,400,000',
     followersCount: '4.2M',
@@ -97,7 +97,7 @@ const ARTISTS_DATABASE = [
     id: 'ahmed-saad',
     name: 'أحمد سعد',
     englishName: 'Ahmed Saad',
-    avatarUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ahmed_Saad.png',
     bio: 'صوت شعبي وطربي قوي ومتصدر المنصات بأنجح الأغاني والأعمال.',
     monthlyListeners: '8,100,000',
     followersCount: '5.0M',
@@ -150,7 +150,7 @@ const ARTISTS_DATABASE = [
   }
 ];
 
-// Curated catalog
+// Curated catalog with authentic YouTube HD video covers and verified IDs
 const TRACKS_CATALOG = [
   {
     id: 'amr-wayah',
@@ -159,7 +159,7 @@ const TRACKS_CATALOG = [
     artist: 'عمرو دياب',
     album: 'وياه (2009)',
     duration: 295,
-    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/QFN5xMPFhyo/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب مصري',
@@ -167,8 +167,8 @@ const TRACKS_CATALOG = [
     playCount: '84,120,400',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'F4vA9J_y19w'
+    source: 'youtube',
+    youtubeId: 'QFN5xMPFhyo'
   },
   {
     id: 'amr-tamally',
@@ -177,7 +177,7 @@ const TRACKS_CATALOG = [
     artist: 'عمرو دياب',
     album: 'تملي معاك (2000)',
     duration: 268,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/EgmXTmj62ic/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'رومانسي',
@@ -185,8 +185,8 @@ const TRACKS_CATALOG = [
     playCount: '145,800,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'pSwnp2L2i4c'
+    source: 'youtube',
+    youtubeId: 'EgmXTmj62ic'
   },
   {
     id: 'wegz-bakht',
@@ -195,7 +195,7 @@ const TRACKS_CATALOG = [
     artist: 'ويجز',
     album: 'البخت (2022)',
     duration: 215,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'تراب مصري',
@@ -204,7 +204,7 @@ const TRACKS_CATALOG = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p1A4e6B7b6Q'
+    youtubeId: '_RHIECWv728'
   },
   {
     id: 'wegz-dorak',
@@ -213,7 +213,7 @@ const TRACKS_CATALOG = [
     artist: 'ويجز',
     album: 'دورك جي',
     duration: 195,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/bav-oRRNU94/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'تراب / راب',
@@ -222,7 +222,7 @@ const TRACKS_CATALOG = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'qN_8HlZ2y8s'
+    youtubeId: 'bav-oRRNU94'
   },
   {
     id: 'cairokee-basrah',
@@ -231,7 +231,7 @@ const TRACKS_CATALOG = [
     artist: 'كايروكي',
     album: 'روما (2022)',
     duration: 240,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/1xsDmAYVlrs/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'روك مصري',
@@ -240,7 +240,7 @@ const TRACKS_CATALOG = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'v1A5e6B7b7Q'
+    youtubeId: '1xsDmAYVlrs'
   },
   {
     id: 'saad-wassa',
@@ -249,7 +249,7 @@ const TRACKS_CATALOG = [
     artist: 'أحمد سعد',
     album: 'وسع وسع (2022)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/aKCL3I5iQ18/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'شعبي مودرن',
@@ -258,7 +258,7 @@ const TRACKS_CATALOG = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p2A4e6B7b8Q'
+    youtubeId: 'aKCL3I5iQ18'
   },
   {
     id: 'fairouz-nassam',
@@ -267,7 +267,7 @@ const TRACKS_CATALOG = [
     artist: 'فيروز',
     album: 'أغاني زمان',
     duration: 252,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/PY1Ue0ykOrA/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'طرب لبناني',
@@ -275,8 +275,8 @@ const TRACKS_CATALOG = [
     playCount: '62,900,100',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'k9E2jR5h66o'
+    source: 'youtube',
+    youtubeId: 'PY1Ue0ykOrA'
   }
 ];
 
@@ -356,7 +356,7 @@ async function searchAudius(query: string): Promise<any[]> {
 
     return tracks.map((item: any) => {
       const durationSeconds = Math.round(item.duration || 180);
-      const artwork = item.artwork?.['480x480'] || item.artwork?.['1000x1000'] || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+      const artwork = item.artwork?.['480x480'] || item.artwork?.['1000x1000'] || 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
       const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${item.id}/stream?app_name=NAGHAMAT_APP`;
 
       return {

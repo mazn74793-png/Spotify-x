@@ -6,7 +6,7 @@ const DEFAULT_USER: UserProfile = {
   id: 'usr-vip-001',
   name: 'عاشق الموسيقى',
   email: 'listener@naghamat.app',
-  avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+  avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg',
   isVip: true,
   memberSince: '2024',
   audioQuality: '320k',

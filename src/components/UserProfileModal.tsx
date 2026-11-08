@@ -31,10 +31,10 @@ interface UserProfileModalProps {
 }
 
 const AVATAR_OPTIONS = [
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80'
+  'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/1/14/Fairuz_1971.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/f/fa/Cairokee.band.jpg'
 ];
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({

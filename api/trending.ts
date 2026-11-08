@@ -60,7 +60,7 @@ const DEFAULT_ARTISTS = [
     id: 'wegz',
     name: 'ويجز',
     englishName: 'Wegz',
-    avatarUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
     bio: 'رائد مشهد التراب والراب المصري الحديث، أحد أكثر الفنانين استماعاً وتأثيراً.',
     monthlyListeners: '7,900,000',
     followersCount: '4.8M',
@@ -77,7 +77,7 @@ const DEFAULT_TRACKS = [
     artist: 'عمرو دياب',
     album: 'وياه (2009)',
     duration: 295,
-    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/QFN5xMPFhyo/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب مصري',
@@ -85,8 +85,8 @@ const DEFAULT_TRACKS = [
     playCount: '84,120,400',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'F4vA9J_y19w'
+    source: 'youtube',
+    youtubeId: 'QFN5xMPFhyo'
   },
   {
     id: 'wegz-bakht',
@@ -95,7 +95,7 @@ const DEFAULT_TRACKS = [
     artist: 'ويجز',
     album: 'البخت (2022)',
     duration: 215,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'تراب مصري',
@@ -104,7 +104,7 @@ const DEFAULT_TRACKS = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p1A4e6B7b6Q'
+    youtubeId: '_RHIECWv728'
   },
   {
     id: 'cairokee-basrah',
@@ -113,7 +113,7 @@ const DEFAULT_TRACKS = [
     artist: 'كايروكي',
     album: 'روما (2022)',
     duration: 240,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/1xsDmAYVlrs/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'روك مصري',
@@ -122,7 +122,7 @@ const DEFAULT_TRACKS = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'v1A5e6B7b7Q'
+    youtubeId: '1xsDmAYVlrs'
   },
   {
     id: 'saad-wassa',
@@ -131,7 +131,7 @@ const DEFAULT_TRACKS = [
     artist: 'أحمد سعد',
     album: 'وسع وسع (2022)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/aKCL3I5iQ18/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'شعبي مودرن',
@@ -140,7 +140,7 @@ const DEFAULT_TRACKS = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p2A4e6B7b8Q'
+    youtubeId: 'aKCL3I5iQ18'
   },
   {
     id: 'fairouz-nassam',
@@ -149,7 +149,7 @@ const DEFAULT_TRACKS = [
     artist: 'فيروز',
     album: 'أغاني زمان',
     duration: 252,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/PY1Ue0ykOrA/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'طرب لبناني',
@@ -157,8 +157,8 @@ const DEFAULT_TRACKS = [
     playCount: '62,900,100',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'k9E2jR5h66o'
+    source: 'youtube',
+    youtubeId: 'PY1Ue0ykOrA'
   }
 ];
 

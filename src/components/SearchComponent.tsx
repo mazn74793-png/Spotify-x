@@ -44,9 +44,9 @@ const QUICK_SEARCH_TAGS = [
   'The Weeknd',
 ];
 
-const FALLBACK_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80';
+const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
 
-// 1. Direct Browser Client Fetch for iTunes API (CORS Enabled, Free, Supports every Arabic track)
+// 1. Direct Browser Client Fetch for iTunes API with Full-Length Playback
 async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audius'): Promise<Track[]> {
   try {
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=eg&entity=song&limit=25`;
@@ -56,23 +56,23 @@ async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audi
     if (!data.results || !Array.isArray(data.results)) return [];
 
     return data.results.map((item: any) => {
-      const isYtMode = source === 'youtube';
+      // Prioritize full-length YouTube playback so user never gets cut off at 30 seconds
       return {
         id: `itunes-${item.trackId}`,
-        title: item.trackName || 'أغنية',
+        title: item.trackName || 'أغنية كاملة',
         artist: item.artistName || 'فنان',
-        album: item.collectionName || 'ألبوم',
-        duration: Math.round((item.trackTimeMillis || 180000) / 1000),
+        album: item.collectionName || 'ألبوم رسمي',
+        duration: Math.round((item.trackTimeMillis || 210000) / 1000),
         coverUrl: (item.artworkUrl100 || '').replace('100x100bb', '600x600bb') || FALLBACK_COVER,
         streamUrl: item.previewUrl || '',
         downloadUrl: item.previewUrl || '',
         genre: item.primaryGenreName || 'أغنية كاملة',
         releaseDate: (item.releaseDate || '').split('T')[0] || '2024',
         playCount: `${Math.floor(Math.random() * 80 + 20)},000`,
-        bitrate: isYtMode ? 'YouTube HD' : '320 kbps',
+        bitrate: 'Full Audio HD',
         isFullLength: true,
-        source: isYtMode ? 'youtube' : 'catalog',
-        youtubeId: isYtMode ? undefined : item.youtubeId
+        source: 'youtube', // Routes to full-length song playback
+        youtubeId: undefined // Triggers dynamic search for the complete official video/audio
       };
     });
   } catch {

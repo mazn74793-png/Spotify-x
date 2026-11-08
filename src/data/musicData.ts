@@ -80,8 +80,8 @@ export const DEFAULT_ARTISTS: Artist[] = [
     id: 'wegz',
     name: 'ويجز',
     englishName: 'Wegz',
-    avatarUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-    headerUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
+    headerUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
     bio: 'رائد مشهد التراب والراب المصري الحديث، أحد أكثر الفنانين تأثيراً واستماعاً في العالم العربي.',
     monthlyListeners: '7,900,000',
     followersCount: '4.8M',
@@ -92,8 +92,8 @@ export const DEFAULT_ARTISTS: Artist[] = [
     id: 'cairokee',
     name: 'كايروكي',
     englishName: 'Cairokee',
-    avatarUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-    headerUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Cairokee.band.jpg',
+    headerUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Cairokee.band.jpg',
     bio: 'فرقة الروك المصرية الأشهر، صوت الشارع والأغاني المعبرة عن أحلام وتطلعات الشباب.',
     monthlyListeners: '6,400,000',
     followersCount: '4.2M',
@@ -104,8 +104,8 @@ export const DEFAULT_ARTISTS: Artist[] = [
     id: 'ahmed-saad',
     name: 'أحمد سعد',
     englishName: 'Ahmed Saad',
-    avatarUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    headerUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ahmed_Saad.png',
+    headerUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ahmed_Saad.png',
     bio: 'صوت شعبي وطربي قوي ومتصدر المنصات بأنجح الأغاني والأعمال السينمائية والتلفزيونية.',
     monthlyListeners: '8,100,000',
     followersCount: '5.0M',
@@ -196,7 +196,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'عمرو دياب',
     album: 'وياه (2009)',
     duration: 295,
-    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/QFN5xMPFhyo/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب مصري',
@@ -204,8 +204,8 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '84,120,400',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'F4vA9J_y19w'
+    source: 'youtube',
+    youtubeId: 'QFN5xMPFhyo'
   },
   {
     id: 'amr-tamally',
@@ -214,7 +214,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'عمرو دياب',
     album: 'تملي معاك (2000)',
     duration: 268,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/EgmXTmj62ic/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'رومانسي',
@@ -222,8 +222,8 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '145,800,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'pSwnp2L2i4c'
+    source: 'youtube',
+    youtubeId: 'EgmXTmj62ic'
   },
   {
     id: 'amr-nour',
@@ -232,7 +232,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'عمرو دياب',
     album: 'نور العين (1996)',
     duration: 240,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب مصري',
@@ -240,7 +240,7 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '190,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
+    source: 'youtube',
     youtubeId: 'x6zLzL2B28Y'
   },
   {
@@ -270,7 +270,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'فيروز',
     album: 'أغاني زمان',
     duration: 252,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/PY1Ue0ykOrA/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'طرب لبناني',
@@ -278,8 +278,8 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '62,900,100',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
-    youtubeId: 'k9E2jR5h66o'
+    source: 'youtube',
+    youtubeId: 'PY1Ue0ykOrA'
   },
   {
     id: 'fairouz-sahar',
@@ -344,15 +344,15 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'شيرين عبد الوهاب',
     album: 'نساي (2018)',
     duration: 220,
-    coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://cdn.freesound.org/previews/689/689728_11861866-lq.mp3',
-    downloadUrl: 'https://cdn.freesound.org/previews/689/689728_11861866-lq.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/49/%D8%B4%D9%8A%D8%B1%D9%8A%D9%86.jpg',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب مصري',
     releaseDate: '2018',
     playCount: '74,200,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
+    source: 'youtube',
     youtubeId: 'qN_8HlZ2y8s'
   },
   {
@@ -390,7 +390,7 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '89,400,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
+    source: 'youtube',
     youtubeId: 'sJq7y7r28P8'
   },
   {
@@ -400,15 +400,15 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'تامر حسني',
     album: 'عيش بشوقك (2018)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://cdn.freesound.org/previews/682/682914_11861866-lq.mp3',
-    downloadUrl: 'https://cdn.freesound.org/previews/682/682914_11861866-lq.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Tamer_Hosny%27s_NYE_Concert_%282025%29_%28cropped%29.png',
+    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'حماسي',
     releaseDate: '2018',
     playCount: '130,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
+    source: 'youtube',
     youtubeId: '1w4q1m0NqE0'
   },
   {
@@ -418,7 +418,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'تامر حسني',
     album: 'فيلم تاج (2023)',
     duration: 195,
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Tamer_Hosny%27s_NYE_Concert_%282025%29_%28cropped%29.png',
+    coverUrl: 'https://i.ytimg.com/vi/bav-oRRNU94/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب شبابي',
@@ -427,7 +427,7 @@ export const DEFAULT_TRACKS: Track[] = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: '2m-90jU1Y3o'
+    youtubeId: 'bav-oRRNU94'
   },
 
   // Hamaki
@@ -446,7 +446,7 @@ export const DEFAULT_TRACKS: Track[] = [
     playCount: '124,500,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog',
+    source: 'youtube',
     youtubeId: 'aV0pP3y7wM0'
   },
   {
@@ -456,7 +456,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'محمد حماقي',
     album: 'أدرينالين (2022)',
     duration: 205,
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Mohamed_Hamaki_2.jpg',
+    coverUrl: 'https://i.ytimg.com/vi/Vmq8os0Llpk/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب حديث',
@@ -465,7 +465,7 @@ export const DEFAULT_TRACKS: Track[] = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'pQ7d7K4eF_g'
+    youtubeId: 'Vmq8os0Llpk'
   },
 
   // Wegz
@@ -476,7 +476,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'ويجز',
     album: 'البخت (2022)',
     duration: 215,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'تراب مصري',
@@ -485,7 +485,7 @@ export const DEFAULT_TRACKS: Track[] = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p1A4e6B7b6Q'
+    youtubeId: '_RHIECWv728'
   },
   {
     id: 'wegz-dorak',
@@ -494,7 +494,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'ويجز',
     album: 'دورك جي',
     duration: 195,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'تراب / راب',
@@ -514,7 +514,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'كايروكي',
     album: 'روما (2022)',
     duration: 240,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/1xsDmAYVlrs/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
     genre: 'روك مصري',
@@ -523,7 +523,7 @@ export const DEFAULT_TRACKS: Track[] = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'v1A5e6B7b7Q'
+    youtubeId: '1xsDmAYVlrs'
   },
 
   // Ahmed Saad
@@ -534,7 +534,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'أحمد سعد',
     album: 'وسع وسع (2022)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://i.ytimg.com/vi/aKCL3I5iQ18/hqdefault.jpg',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'شعبي مودرن',
@@ -543,7 +543,7 @@ export const DEFAULT_TRACKS: Track[] = [
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p2A4e6B7b8Q'
+    youtubeId: 'aKCL3I5iQ18'
   },
   {
     id: 'saad-ekhtiyarati',
@@ -552,7 +552,7 @@ export const DEFAULT_TRACKS: Track[] = [
     artist: 'أحمد سعد',
     album: 'فيلم مستر إكس (2023)',
     duration: 185,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ahmed_Saad.png',
     streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
     genre: 'بوب شعبي',
