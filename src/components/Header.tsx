@@ -1,5 +1,4 @@
-import React from 'react';
-import { ActiveTab } from '../types/music';
+import { ActiveTab, UserProfile } from '../types/music';
 import { 
   Home, 
   Search, 
@@ -7,7 +6,9 @@ import {
   Wifi, 
   WifiOff, 
   Smartphone,
-  HelpCircle
+  HelpCircle,
+  User,
+  Crown
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
@@ -17,6 +18,8 @@ interface HeaderProps {
   isOnline: boolean;
   downloadsCount: number;
   onOpenInstallModal: () => void;
+  userProfile: UserProfile;
+  onOpenProfile: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,7 +27,9 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   isOnline,
   downloadsCount,
-  onOpenInstallModal
+  onOpenInstallModal,
+  userProfile,
+  onOpenProfile
 }) => {
   const { isInstalled } = usePWAInstall();
 
@@ -120,11 +125,34 @@ export const Header: React.FC<HeaderProps> = ({
           {!isInstalled && (
             <button
               onClick={onOpenInstallModal}
-              className="px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black font-bold text-xs transition-all active:scale-95 shadow"
+              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black font-bold text-xs transition-all active:scale-95 shadow hidden sm:inline-block"
             >
-              تثبيت التطبيق
+              تثبيت
             </button>
           )}
+
+          {/* User Account / VIP Profile Button */}
+          <button
+            onClick={onOpenProfile}
+            title={`حساب المستخدم: ${userProfile.name}`}
+            className="flex items-center gap-2 p-1 pl-2.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-white/10 transition-all active:scale-95 group"
+          >
+            <div className="relative">
+              <img 
+                src={userProfile.avatarUrl} 
+                alt={userProfile.name}
+                className="w-7 h-7 rounded-full object-cover border border-[#1ed760]"
+              />
+              {userProfile.isVip && (
+                <div className="absolute -top-1 -right-1 bg-amber-400 text-black p-0.5 rounded-full">
+                  <Crown className="w-2 h-2 fill-black" />
+                </div>
+              )}
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-[#1ed760] transition-colors max-w-[80px] truncate hidden sm:inline">
+              {userProfile.name}
+            </span>
+          </button>
         </div>
       </div>
     </header>

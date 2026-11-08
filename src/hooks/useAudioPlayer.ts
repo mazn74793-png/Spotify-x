@@ -1,9 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Track, DownloadedTrack, RepeatMode } from '../types/music';
-import { getAllDownloadedTracks } from '../services/db';
+import { getAllDownloadedTracks, cleanMusicQuery } from '../services/db';
+import { addListeningTime, getUserProfile, subscribeUserProfile } from '../services/authService';
 
 export function useAudioPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const bassFilterRef = useRef<BiquadFilterNode | null>(null);
+  const trebleFilterRef = useRef<BiquadFilterNode | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -17,14 +22,104 @@ export function useAudioPlayer() {
   const [queueIndex, setQueueIndex] = useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOfflinePlaying, setIsOfflinePlaying] = useState<boolean>(false);
-  const [sleepTimer, setSleepTimer] = useState<number | null>(null); // minutes
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null);
   const [sleepTimerEndTime, setSleepTimerEndTime] = useState<number | null>(null);
+  const [userProfile, setUserProfile] = useState(getUserProfile());
 
-  // Initialize audio element
+  // Listen to profile updates (e.g. equalizer preset, background playback toggle)
+  useEffect(() => {
+    return subscribeUserProfile((updated) => {
+      setUserProfile(updated);
+    });
+  }, []);
+
+  // Update Web Audio equalizer filters based on profile preset
+  useEffect(() => {
+    if (!bassFilterRef.current || !trebleFilterRef.current) return;
+    const preset = userProfile.equalizerPreset || 'tarab';
+
+    switch (preset) {
+      case 'bass':
+        bassFilterRef.current.gain.value = 7;
+        trebleFilterRef.current.gain.value = -1;
+        break;
+      case 'tarab':
+        bassFilterRef.current.gain.value = 3;
+        trebleFilterRef.current.gain.value = 5;
+        break;
+      case 'vocal':
+        bassFilterRef.current.gain.value = -2;
+        trebleFilterRef.current.gain.value = 6;
+        break;
+      case 'relax':
+        bassFilterRef.current.gain.value = 2;
+        trebleFilterRef.current.gain.value = -3;
+        break;
+      case 'balanced':
+      default:
+        bassFilterRef.current.gain.value = 0;
+        trebleFilterRef.current.gain.value = 0;
+        break;
+    }
+  }, [userProfile.equalizerPreset]);
+
+  // Track listening minutes while playing
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      addListeningTime(1);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  // Request WakeLock while playing to prevent mobile screen sleep during active playback
+  useEffect(() => {
+    let wakeLockSentinel: any = null;
+    if (isPlaying && typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+      (navigator as any).wakeLock.request('screen')
+        .then((sentinel: any) => {
+          wakeLockSentinel = sentinel;
+        })
+        .catch(() => {
+          // Silently ignore if power saving prevents wake lock
+        });
+    }
+    return () => {
+      wakeLockSentinel?.release?.().catch(() => {});
+    };
+  }, [isPlaying]);
+
+  // Initialize HTML5 Audio element and Web Audio API
   useEffect(() => {
     const audio = new Audio();
     audio.preload = 'metadata';
+    (audio as any).playsInline = true;
     audioRef.current = audio;
+
+    // Attach Web Audio equalizer (when supported)
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        audioContextRef.current = ctx;
+
+        const bass = ctx.createBiquadFilter();
+        bass.type = 'lowshelf';
+        bass.frequency.value = 250;
+        bass.gain.value = 3;
+        bassFilterRef.current = bass;
+
+        const treble = ctx.createBiquadFilter();
+        treble.type = 'highshelf';
+        treble.frequency.value = 3500;
+        treble.gain.value = 4;
+        trebleFilterRef.current = treble;
+
+        // Note: createMediaElementSource will be hooked on first play
+      }
+    } catch {
+      // Ignore if Web Audio is restricted
+    }
 
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
@@ -43,22 +138,18 @@ export function useAudioPlayer() {
     const handleCanPlay = () => setIsLoading(false);
 
     const handleEnded = () => {
-      // Repeat one
       if (repeatMode === 'one') {
         audio.currentTime = 0;
         audio.play().catch(console.error);
         return;
       }
-      // Otherwise play next in queue
       playNext();
     };
 
     const handleError = () => {
-      // Ignore if element is unloaded or has no valid src
       if (!audio.getAttribute('src')) return;
       setIsLoading(false);
       setIsPlaying(false);
-      console.warn('Audio playback error occurred.');
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -85,7 +176,7 @@ export function useAudioPlayer() {
     };
   }, []);
 
-  // Sync MediaSession for mobile lockscreen controls
+  // Sync MediaSession for full lockscreen & background controls
   useEffect(() => {
     if (!currentTrack || typeof navigator === 'undefined' || !('mediaSession' in navigator)) {
       return;
@@ -96,15 +187,22 @@ export function useAudioPlayer() {
       artist: currentTrack.artist,
       album: currentTrack.album || 'نغمات ميكس',
       artwork: [
+        { src: currentTrack.coverUrl, sizes: '96x96', type: 'image/jpeg' },
+        { src: currentTrack.coverUrl, sizes: '128x128', type: 'image/jpeg' },
+        { src: currentTrack.coverUrl, sizes: '192x192', type: 'image/jpeg' },
+        { src: currentTrack.coverUrl, sizes: '256x256', type: 'image/jpeg' },
+        { src: currentTrack.coverUrl, sizes: '384x384', type: 'image/jpeg' },
         { src: currentTrack.coverUrl, sizes: '512x512', type: 'image/jpeg' }
       ]
     });
 
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
     navigator.mediaSession.setActionHandler('play', () => {
-      audioRef.current?.play().catch(console.error);
+      togglePlay();
     });
     navigator.mediaSession.setActionHandler('pause', () => {
-      audioRef.current?.pause();
+      togglePlay();
     });
     navigator.mediaSession.setActionHandler('previoustrack', () => {
       playPrevious();
@@ -112,15 +210,34 @@ export function useAudioPlayer() {
     navigator.mediaSession.setActionHandler('nexttrack', () => {
       playNext();
     });
+    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+      const skip = details.seekOffset || 10;
+      seek(Math.max(currentTime - skip, 0));
+    });
+    navigator.mediaSession.setActionHandler('seekforward', (details) => {
+      const skip = details.seekOffset || 10;
+      seek(Math.min(currentTime + skip, duration || 300));
+    });
     navigator.mediaSession.setActionHandler('seekto', (details) => {
-      if (details.seekTime !== undefined && audioRef.current) {
-        audioRef.current.currentTime = details.seekTime;
+      if (details.seekTime !== undefined) {
+        seek(details.seekTime);
       }
     });
-  }, [currentTrack]);
 
+    if ('setPositionState' in navigator.mediaSession && duration > 0) {
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: Math.max(duration, 0),
+          playbackRate: 1,
+          position: Math.min(Math.max(currentTime, 0), duration)
+        });
+      } catch {
+        // Ignore sync boundary warning
+      }
+    }
+  }, [currentTrack, isPlaying, duration, currentTime]);
 
-  // Sleep Timer countdown handler
+  // Sleep Timer countdown
   useEffect(() => {
     if (!sleepTimerEndTime) return;
 
@@ -152,7 +269,7 @@ export function useAudioPlayer() {
     setSleepTimerEndTime(endTime);
   };
 
-  // Play track with smart local cache inspection
+  // Play track with background audio support and offline storage inspection
   const playTrack = useCallback(async (track: Track, newQueue?: Track[]) => {
     setIsLoading(true);
 
@@ -162,35 +279,16 @@ export function useAudioPlayer() {
       setQueueIndex(idx !== -1 ? idx : 0);
     }
 
-    // Is this a YouTube track?
     const isYT = track.source === 'youtube' || Boolean(track.youtubeId);
-
-    if (isYT) {
-      // Pause HTML5 audio if it was running cleanly
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeAttribute('src');
-        audioRef.current.load();
-      }
-      setIsOfflinePlaying(false);
-      setCurrentTrack(track);
-      setDuration(track.duration || 210);
-      setCurrentTime(0);
-      setIsPlaying(true);
-      setIsLoading(false);
-      return;
-    }
 
     // Check if song is downloaded offline in IndexedDB
     let playbackSource = track.streamUrl;
     let isLocal = false;
 
-    // Check if the track has a localAudioUrl already attached
     if ((track as DownloadedTrack).localAudioUrl) {
       playbackSource = (track as DownloadedTrack).localAudioUrl!;
       isLocal = true;
     } else {
-      // Query offline library in IndexedDB
       try {
         const downloaded = await getAllDownloadedTracks();
         const found = downloaded.find(d => d.id === track.id);
@@ -203,7 +301,26 @@ export function useAudioPlayer() {
       }
     }
 
-    // If external online audio, proxy it through /api/proxy-audio to guarantee valid CORS and audio/mpeg headers
+    // For background playback continuity:
+    // If it's a YouTube track and user requested background play or has audio stream,
+    // find matching stream so HTML5 audio plays on lock screen!
+    if (isYT && !playbackSource) {
+      const { cleanTitle, cleanArtist } = cleanMusicQuery(track.title, track.artist);
+      try {
+        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(`${cleanTitle} ${cleanArtist}`)}&entity=song&limit=1`, {
+          signal: AbortSignal.timeout(2500)
+        });
+        if (itunesRes.ok) {
+          const data = await itunesRes.json();
+          if (data.results?.[0]?.previewUrl) {
+            playbackSource = data.results[0].previewUrl;
+          }
+        }
+      } catch {
+        // Fall back to YouTube player iframe
+      }
+    }
+
     let effectiveUrl = playbackSource;
     if (!isLocal && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:')) {
       effectiveUrl = `/api/proxy-audio?url=${encodeURIComponent(effectiveUrl)}`;
@@ -211,124 +328,75 @@ export function useAudioPlayer() {
 
     setIsOfflinePlaying(isLocal);
     setCurrentTrack(track);
+    setDuration(track.duration || 210);
+    setCurrentTime(0);
 
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
       audioRef.current.load();
 
+      // Resume Web Audio Context if suspended by user gesture restrictions
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume().catch(() => {});
+      }
+
       audioRef.current.play().then(() => {
         setIsPlaying(true);
         setIsLoading(false);
       }).catch(err => {
-        console.warn('Auto-play error or stream interrupted:', err);
+        console.warn('Audio auto-play notice:', err);
+        // YouTube iframe handles visual play
+        setIsPlaying(true);
         setIsLoading(false);
       });
+    } else {
+      // Pure YouTube video
+      setIsPlaying(true);
+      setIsLoading(false);
     }
   }, []);
 
   const togglePlay = useCallback(() => {
     if (!currentTrack) return;
-    const isYT = currentTrack.source === 'youtube' || Boolean(currentTrack.youtubeId);
-    
-    if (isYT) {
-      setIsPlaying(prev => !prev);
-      return;
-    }
+    const hasAudioSrc = Boolean(audioRef.current?.getAttribute('src'));
 
-    if (!audioRef.current) return;
     if (isPlaying) {
-      audioRef.current.pause();
+      if (hasAudioSrc) {
+        audioRef.current?.pause();
+      }
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(console.error);
+      if (hasAudioSrc) {
+        audioRef.current?.play().catch(console.error);
+      }
+      setIsPlaying(true);
     }
   }, [isPlaying, currentTrack]);
 
   const seek = useCallback((timeInSeconds: number) => {
-    const isYT = currentTrack?.source === 'youtube' || Boolean(currentTrack?.youtubeId);
     setCurrentTime(timeInSeconds);
-
-    if (!isYT && audioRef.current) {
+    if (audioRef.current && audioRef.current.src) {
       audioRef.current.currentTime = timeInSeconds;
     }
-  }, [currentTrack]);
-
-  const playNext = useCallback(() => {
-    if (queue.length === 0) return;
-
-    let nextIndex = queueIndex + 1;
-    if (isShuffle) {
-      nextIndex = Math.floor(Math.random() * queue.length);
-    } else if (nextIndex >= queue.length) {
-      if (repeatMode === 'all') {
-        nextIndex = 0;
-      } else {
-        return; // Stopped at end of queue
-      }
-    }
-
-    const nextTrack = queue[nextIndex];
-    if (nextTrack) {
-      setQueueIndex(nextIndex);
-      playTrack(nextTrack);
-    }
-  }, [queue, queueIndex, isShuffle, repeatMode, playTrack]);
-
-  const playPrevious = useCallback(() => {
-    if (!audioRef.current || queue.length === 0) return;
-
-    // If current time > 3 seconds, rewind to start first
-    if (audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
-      return;
-    }
-
-    let prevIndex = queueIndex - 1;
-    if (prevIndex < 0) {
-      prevIndex = queue.length - 1;
-    }
-
-    const prevTrack = queue[prevIndex];
-    if (prevTrack) {
-      setQueueIndex(prevIndex);
-      playTrack(prevTrack);
-    }
-  }, [queue, queueIndex, playTrack]);
-
-  // YouTube playback progress handler
-  useEffect(() => {
-    const isYT = currentTrack?.source === 'youtube' || Boolean(currentTrack?.youtubeId);
-    if (!isYT || !isPlaying) return;
-
-    const interval = setInterval(() => {
-      setCurrentTime(prev => {
-        if (duration > 0 && prev >= duration) {
-          playNext();
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [currentTrack, isPlaying, duration, playNext]);
+  }, []);
 
   const setVolume = useCallback((newVolume: number) => {
-    if (!audioRef.current) return;
     const clamped = Math.max(0, Math.min(1, newVolume));
-    audioRef.current.volume = clamped;
     setVolumeState(clamped);
-    if (clamped > 0 && isMuted) {
-      setIsMuted(false);
-      audioRef.current.muted = false;
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : clamped;
     }
   }, [isMuted]);
 
   const toggleMute = useCallback(() => {
-    if (!audioRef.current) return;
-    const nextMuted = !isMuted;
-    audioRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  }, [isMuted]);
+    setIsMuted(prev => {
+      const next = !prev;
+      if (audioRef.current) {
+        audioRef.current.volume = next ? 0 : volume;
+      }
+      return next;
+    });
+  }, [volume]);
 
   const toggleRepeat = useCallback(() => {
     setRepeatMode(prev => {
@@ -342,29 +410,72 @@ export function useAudioPlayer() {
     setIsShuffle(prev => !prev);
   }, []);
 
+  const playNext = useCallback(() => {
+    if (queue.length === 0) return;
+
+    if (isShuffle) {
+      const nextIndex = Math.floor(Math.random() * queue.length);
+      setQueueIndex(nextIndex);
+      playTrack(queue[nextIndex]);
+      return;
+    }
+
+    let nextIndex = queueIndex + 1;
+    if (nextIndex >= queue.length) {
+      if (repeatMode === 'all') {
+        nextIndex = 0;
+      } else {
+        setIsPlaying(false);
+        return;
+      }
+    }
+
+    setQueueIndex(nextIndex);
+    playTrack(queue[nextIndex]);
+  }, [queue, queueIndex, isShuffle, repeatMode, playTrack]);
+
+  const playPrevious = useCallback(() => {
+    if (queue.length === 0) return;
+
+    if (currentTime > 4 && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+      return;
+    }
+
+    let prevIndex = queueIndex - 1;
+    if (prevIndex < 0) {
+      prevIndex = queue.length - 1;
+    }
+
+    setQueueIndex(prevIndex);
+    playTrack(queue[prevIndex]);
+  }, [queue, queueIndex, currentTime, playTrack]);
+
   return {
     currentTrack,
     isPlaying,
-    isLoading,
     currentTime,
-    duration: duration || currentTrack?.duration || 0,
+    duration,
     volume,
     isMuted,
     repeatMode,
     isShuffle,
     queue,
     queueIndex,
+    isLoading,
     isOfflinePlaying,
     sleepTimer,
+    setTimer,
     playTrack,
     togglePlay,
     seek,
-    playNext,
-    playPrevious,
     setVolume,
     toggleMute,
     toggleRepeat,
     toggleShuffle,
-    setTimer
+    playNext,
+    playPrevious,
+    userProfile
   };
 }

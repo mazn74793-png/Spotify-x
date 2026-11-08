@@ -320,14 +320,10 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                         </h4>
                         <p 
                           onClick={(e) => {
-                            if (track.artistId) {
-                              e.stopPropagation();
-                              onOpenArtist(track.artistId);
-                            }
+                            e.stopPropagation();
+                            onOpenArtist(track.artistId || track.artist);
                           }}
-                          className={`text-xs truncate ${
-                            track.artistId ? 'text-zinc-400 hover:text-white hover:underline' : 'text-zinc-400'
-                          }`}
+                          className="text-xs truncate text-zinc-400 hover:text-white hover:underline cursor-pointer"
                         >
                           {track.artist}
                         </p>
@@ -437,14 +433,10 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                         </h4>
                         <p 
                           onClick={(e) => {
-                            if (track.artistId) {
-                              e.stopPropagation();
-                              onOpenArtist(track.artistId);
-                            }
+                            e.stopPropagation();
+                            onOpenArtist(track.artistId || track.artist);
                           }}
-                          className={`text-xs truncate ${
-                            track.artistId ? 'text-zinc-400 hover:text-white hover:underline' : 'text-zinc-400'
-                          }`}
+                          className="text-xs truncate text-zinc-400 hover:text-white hover:underline cursor-pointer"
                         >
                           {track.artist}
                         </p>

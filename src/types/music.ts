@@ -60,3 +60,16 @@ export interface StorageInfo {
   totalBytes: number;
   songsCount: number;
 }
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string;
+  isVip: boolean;
+  memberSince: string;
+  audioQuality: '320k' | '256k' | '160k';
+  equalizerPreset: 'balanced' | 'bass' | 'tarab' | 'vocal' | 'relax';
+  backgroundPlayEnabled: boolean;
+  totalListeningMinutes: number;
+}

@@ -746,8 +746,24 @@ export function searchLocalMusic(query: string, sourceFilter: 'all' | 'youtube' 
 }
 
 export function getLocalArtistProfile(artistId: string) {
-  const artist = DEFAULT_ARTISTS.find(a => a.id === artistId);
+  if (!artistId) return null;
+  const normId = artistId.toLowerCase().trim();
+  const normQuery = normalizeArabic(artistId);
+
+  const artist = DEFAULT_ARTISTS.find(a => 
+    a.id === normId || 
+    normalizeArabic(a.name) === normQuery ||
+    normalizeArabic(a.name).includes(normQuery) ||
+    (a.englishName && a.englishName.toLowerCase() === normId)
+  );
+
   if (!artist) return null;
-  const tracks = DEFAULT_TRACKS.filter(t => t.artistId === artist.id || t.artist.includes(artist.name));
+
+  const artistNorm = normalizeArabic(artist.name);
+  const tracks = DEFAULT_TRACKS.filter(t => 
+    t.artistId === artist.id || 
+    normalizeArabic(t.artist).includes(artistNorm)
+  );
+
   return { artist, tracks };
 }

@@ -171,10 +171,10 @@ export default function handler(_req: any, res: any) {
     featured: DEFAULT_TRACKS,
     artists: DEFAULT_ARTISTS,
     genres: [
-      { id: 'arabic', name: 'طرب وبوب عربي', icon: '🎵', count: 64 },
-      { id: 'pop', name: 'Pop & International', icon: '🌍', count: 120 },
-      { id: 'lofi', name: 'لو فاي واسترخاء (Lo-Fi)', icon: '☕', count: 42 },
-      { id: 'remix', name: 'ريمكس وسهرات DJ', icon: '🔥', count: 55 },
+      { id: 'arabic', name: 'طرب وبوب عربي', icon: 'arabic', count: 64 },
+      { id: 'pop', name: 'Pop & International', icon: 'pop', count: 120 },
+      { id: 'lofi', name: 'لو فاي واسترخاء (Lo-Fi)', icon: 'lofi', count: 42 },
+      { id: 'remix', name: 'ريمكس وسهرات DJ', icon: 'remix', count: 55 },
     ]
   });
 }

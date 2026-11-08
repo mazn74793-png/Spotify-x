@@ -19,6 +19,7 @@ import { DeveloperDocsComponent } from './components/DeveloperDocsComponent';
 import { PlayerComponent } from './components/PlayerComponent';
 import { ArtistProfileModal } from './components/ArtistProfileModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { UserProfileModal } from './components/UserProfileModal';
 import { OfflineBanner } from './components/OfflineBanner';
 import { recordTrackPlay } from './services/recommendationEngine';
 import confetti from 'canvas-confetti';
@@ -27,6 +28,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Connectivity
   const isOnline = useOnlineStatus();
@@ -54,6 +56,7 @@ export default function App() {
     toggleRepeat,
     toggleShuffle,
     setTimer,
+    userProfile,
   } = useAudioPlayer();
 
   // Smart Play Handler that feeds the recommendation engine
@@ -202,6 +205,8 @@ export default function App() {
         isOnline={isOnline}
         downloadsCount={downloadedTracks.length}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        userProfile={userProfile}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
       />
 
       {/* 2. Offline Connectivity Banner */}
@@ -321,6 +326,18 @@ export default function App() {
       <PWAInstallModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
+      />
+
+      {/* 8. User Profile & Account Settings Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userProfile={userProfile}
+        favoritesCount={favoriteIds.size}
+        followedCount={followedArtistIds.size}
+        downloadsCount={downloadedTracks.length}
+        storageUsedText={`${(storageInfo.usedBytes / (1024 * 1024)).toFixed(1)} MB`}
+        onClearStorage={handleClearAllDownloads}
       />
     </div>
   );

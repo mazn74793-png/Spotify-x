@@ -653,14 +653,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
 
                   <p 
                     onClick={(e) => {
-                      if (track.artistId) {
-                        e.stopPropagation();
-                        onOpenArtist(track.artistId);
-                      }
+                      e.stopPropagation();
+                      onOpenArtist(track.artistId || track.artist);
                     }}
-                    className={`text-[11px] truncate mt-0.5 ${
-                      track.artistId ? 'text-zinc-400 hover:text-white hover:underline' : 'text-zinc-400'
-                    }`}
+                    className="text-[11px] truncate mt-0.5 text-zinc-400 hover:text-white hover:underline cursor-pointer"
                   >
                     {track.artist}
                   </p>

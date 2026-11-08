@@ -274,12 +274,12 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               <div className="flex items-center gap-1.5 mt-0.5">
                 <p 
                   onClick={(e) => {
-                    if (currentTrack.artistId && onOpenArtist) {
+                    if (onOpenArtist && currentTrack.artist) {
                       e.stopPropagation();
-                      onOpenArtist(currentTrack.artistId);
+                      onOpenArtist(currentTrack.artistId || currentTrack.artist);
                     }
                   }}
-                  className={`text-[11px] text-zinc-400 truncate ${currentTrack.artistId ? 'hover:underline hover:text-white' : ''}`}
+                  className="text-[11px] text-zinc-400 truncate hover:underline hover:text-white cursor-pointer"
                 >
                   {currentTrack.artist}
                 </p>
@@ -587,14 +587,12 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               </h2>
               <p 
                 onClick={() => {
-                  if (currentTrack.artistId && onOpenArtist) {
+                  if (onOpenArtist && currentTrack.artist) {
                     setIsExpanded(false);
-                    onOpenArtist(currentTrack.artistId);
+                    onOpenArtist(currentTrack.artistId || currentTrack.artist);
                   }
                 }}
-                className={`text-sm sm:text-base text-zinc-400 font-medium mt-1 truncate ${
-                  currentTrack.artistId ? 'hover:underline hover:text-white cursor-pointer' : ''
-                }`}
+                className="text-sm sm:text-base text-zinc-400 font-medium mt-1 truncate hover:underline hover:text-white cursor-pointer"
               >
                 {currentTrack.artist}
               </p>

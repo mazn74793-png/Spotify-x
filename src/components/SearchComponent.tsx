@@ -587,16 +587,10 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                       <div className="flex items-center gap-2 mt-0.5">
                         <p 
                           onClick={(e) => {
-                            if (track.artistId) {
-                              e.stopPropagation();
-                              onOpenArtist(track.artistId);
-                            }
+                            e.stopPropagation();
+                            onOpenArtist(track.artistId || track.artist);
                           }}
-                          className={`text-xs truncate transition-colors ${
-                            track.artistId 
-                              ? 'text-zinc-400 hover:text-white hover:underline' 
-                              : 'text-zinc-400'
-                          }`}
+                          className="text-xs truncate transition-colors text-zinc-400 hover:text-white hover:underline cursor-pointer"
                         >
                           {track.artist}
                         </p>
