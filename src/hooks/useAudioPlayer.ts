@@ -122,22 +122,44 @@ export function useAudioPlayer() {
     }
 
     const handleTimeUpdate = () => {
+      const src = audio.getAttribute('src') || '';
+      // Only sync currentTime from HTML5 audio for real audio files, not silent carrier
+      if (src.startsWith('data:')) return;
       setCurrentTime(audio.currentTime);
     };
 
     const handleLoadedMetadata = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
+      const src = audio.getAttribute('src') || '';
+      // NEVER overwrite track duration with a silent carrier duration
+      if (src.startsWith('data:')) {
+        setIsLoading(false);
+        return;
+      }
+      if (audio.duration && !isNaN(audio.duration) && audio.duration > 2) {
         setDuration(audio.duration);
       }
       setIsLoading(false);
     };
 
     const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePause = () => {
+      const src = audio.getAttribute('src') || '';
+      if (!src.startsWith('data:')) {
+        setIsPlaying(false);
+      }
+    };
     const handleWaiting = () => setIsLoading(true);
     const handleCanPlay = () => setIsLoading(false);
 
     const handleEnded = () => {
+      const src = audio.getAttribute('src') || '';
+      // If playing silent carrier for YouTube, simply loop it and DO NOT skip track!
+      if (src.startsWith('data:')) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+        return;
+      }
+
       if (repeatMode === 'one') {
         audio.currentTime = 0;
         audio.play().catch(console.error);
@@ -473,7 +495,7 @@ export function useAudioPlayer() {
     const interval = setInterval(() => {
       if (audioRef.current && (!audioRef.current.src || audioRef.current.src.startsWith('data:'))) {
         setCurrentTime(prev => {
-          if (duration > 0 && prev >= duration) {
+          if (duration > 10 && prev >= duration) {
             playNext();
             return 0;
           }

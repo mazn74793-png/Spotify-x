@@ -142,10 +142,15 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     const handleMessage = (e: MessageEvent) => {
       try {
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-        if (data && data.event === 'onStateChange') {
-          // 0 = ended -> play next track
-          if (data.info === 0) {
-            onNext();
+        if (data && data.event === 'onStateChange' && data.info === 0) {
+          // Guard: Only advance if the track has actually played for at least 10 seconds
+          // to prevent false triggers during iframe initialization or buffering
+          if (currentTime > 10) {
+            if (repeatMode === 'one') {
+              handleSeek(0);
+            } else {
+              onNext();
+            }
           }
         }
       } catch {
@@ -155,7 +160,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isYouTube, onNext]);
+  }, [isYouTube, onNext, currentTime, repeatMode]);
 
   if (!currentTrack) return null;
 
