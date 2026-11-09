@@ -315,14 +315,13 @@ export function useAudioPlayer() {
       }
     }
 
-    // 100% Full-Length Playback & Mobile Lockscreen Carrier
-    // If the track has a real audio stream, play the real audio!
-    // Only if the track has NO audio stream at all and is YouTube, use a silent carrier loop
-    // so mobile browsers keep the lockscreen controls active while YouTube plays!
+    // 100% Single-Engine Authority: Guarantee NO double audio playback
+    // When playing a YouTube track online (!isLocal), the YouTube player is the single audio source.
+    // HTML5 <audio> plays SILENT_CARRIER to keep mobile lockscreen / background session active with zero sound.
+    // When playing an offline downloaded file (isLocal) or direct MP3 (Audius/Catalog without YouTube), HTML5 <audio> plays the real stream.
     const SILENT_CARRIER = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
-    if (!playbackSource && isYT) {
-      // Use silent background carrier only when track has NO direct audio stream
+    if (isYT && !isLocal) {
       playbackSource = SILENT_CARRIER;
     }
 
@@ -339,6 +338,12 @@ export function useAudioPlayer() {
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
       audioRef.current.loop = effectiveUrl === SILENT_CARRIER;
+      // When playing silent carrier, mute HTML5 audio to be 100% certain it emits zero noise
+      if (effectiveUrl === SILENT_CARRIER) {
+        audioRef.current.volume = 0;
+      } else {
+        audioRef.current.volume = isMuted ? 0 : volume;
+      }
       audioRef.current.load();
 
       // Resume Web Audio Context if suspended

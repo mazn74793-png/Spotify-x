@@ -44,7 +44,9 @@ const QUICK_SEARCH_TAGS = [
   'The Weeknd',
 ];
 
-const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
+import { NEUTRAL_VINYL_COVER, getArtistPortrait } from '../utils/artistPortraits';
+
+const FALLBACK_COVER = NEUTRAL_VINYL_COVER;
 
 // 1. Direct Browser Client Fetch for iTunes API with Full-Length Playback
 async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audius'): Promise<Track[]> {
@@ -243,12 +245,13 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             setMatchedArtists(local.matchedArtists);
           } else if (itunesTracks.length > 0) {
             const top = itunesTracks[0];
+            const verifiedPhoto = getArtistPortrait(top.artist) || top.coverUrl;
             setMatchedArtists([{
               id: `artist-${encodeURIComponent(top.artist)}`,
               name: top.artist,
               englishName: top.artist,
-              avatarUrl: top.coverUrl,
-              headerUrl: top.coverUrl,
+              avatarUrl: verifiedPhoto,
+              headerUrl: verifiedPhoto,
               bio: `أفضل الأغاني والمسارات الموسيقية للمطرب ${top.artist}`,
               monthlyListeners: '2,450,000',
               followersCount: '1.2M',
@@ -432,11 +435,11 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                   <div className="flex items-center gap-4">
                     <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-2xl shrink-0 group-hover:scale-105 transition-transform bg-zinc-800 ring-2 ring-white/10 group-hover:ring-[#1ed760]/60">
                       <img
-                        src={artist.avatarUrl || FALLBACK_COVER}
+                        src={artist.avatarUrl || getArtistPortrait(artist.id || artist.name)}
                         alt={artist.name}
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                          (e.currentTarget as HTMLImageElement).src = getArtistPortrait(artist.id || artist.name);
                         }}
                         className="w-full h-full object-cover"
                       />

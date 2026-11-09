@@ -50,7 +50,9 @@ interface PlayerComponentProps {
   onOpenArtist?: (artistId: string) => void;
 }
 
-const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
+import { NEUTRAL_VINYL_COVER } from '../utils/artistPortraits';
+
+const FALLBACK_COVER = NEUTRAL_VINYL_COVER;
 
 export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   currentTrack,
@@ -85,20 +87,20 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   const hasAudioStream = Boolean(currentTrack?.streamUrl) || Boolean((currentTrack as any)?.localAudioUrl);
   const isYouTube = Boolean(currentTrack?.source === 'youtube' || currentTrack?.youtubeId);
 
-  // Auto-switch mode based on available streams
+  // Auto-switch mode: For YouTube tracks, enable video theater preview by default so user gets the in-app video experience
   useEffect(() => {
-    if (!hasAudioStream && isYouTube) {
+    if (isYouTube && !isOfflinePlaying) {
       setVideoMode(true);
     } else {
       setVideoMode(false);
     }
-  }, [currentTrack?.id, hasAudioStream, isYouTube]);
+  }, [currentTrack?.id, isYouTube, isOfflinePlaying]);
 
   // Sync play / pause state to YouTube iframe
   useEffect(() => {
     if (!isYouTube || !ytIframeRef.current) return;
     try {
-      const shouldPlayYouTube = isPlaying && (videoMode || !hasAudioStream);
+      const shouldPlayYouTube = isPlaying && !isOfflinePlaying;
       const command = shouldPlayYouTube ? 'playVideo' : 'pauseVideo';
       ytIframeRef.current.contentWindow?.postMessage(
         JSON.stringify({ event: 'command', func: command, args: '' }),
@@ -107,7 +109,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     } catch {
       // Ignore cross-origin warnings
     }
-  }, [isPlaying, isYouTube, videoMode, hasAudioStream]);
+  }, [isPlaying, isYouTube, isOfflinePlaying]);
 
   // Sync volume & mute to YouTube iframe
   useEffect(() => {
@@ -332,6 +334,21 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
           {/* Right: Actions, Volume & Expand */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* Direct In-App Theater Video Preview Button */}
+            {isYouTube && (
+              <button
+                onClick={() => {
+                  setVideoMode(true);
+                  setIsExpanded(true);
+                }}
+                title="مشاهدة فيديو كليب الأغنية مباشرة داخل التطبيق بجودة عالية"
+                className="px-2.5 py-1 rounded-full bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 border border-red-500/30 flex items-center gap-1 text-xs font-bold transition-all active:scale-95"
+              >
+                <Tv className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">فيديو</span>
+              </button>
+            )}
+
             {/* Download Button */}
             <button
               onClick={handleDownloadClick}
@@ -450,14 +467,20 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
           )}
         </div>
 
-        {/* Middle Stage: Video Container or Authentic Album Artwork */}
-        <div className="my-auto py-4 flex flex-col items-center justify-center max-w-lg mx-auto w-full">
-          <div className="relative w-full aspect-video sm:aspect-square max-w-sm sm:max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black flex items-center justify-center">
+        {/* Middle Stage: Video Theater Container or Authentic Album Artwork */}
+        <div className={`my-auto py-2 sm:py-4 flex flex-col items-center justify-center mx-auto w-full transition-all duration-300 ${
+          videoMode ? 'max-w-3xl' : 'max-w-md'
+        }`}>
+          <div className={`relative w-full rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 bg-black flex items-center justify-center ${
+            videoMode 
+              ? 'aspect-video border-2 border-white/20 shadow-green-500/10' 
+              : 'aspect-square max-w-sm sm:max-w-md border border-white/10'
+          }`}>
             {/* 1. YouTube Iframe sits cleanly inside the stage container */}
             {isYouTube && (
               <div 
                 className={`absolute inset-0 w-full h-full transition-opacity duration-200 ${
-                  videoMode || !hasAudioStream ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                  videoMode ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
                 <iframe
@@ -471,10 +494,10 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               </div>
             )}
 
-            {/* 2. Authentic Artwork (Visible in Audio Mode when audio stream exists) */}
+            {/* 2. Authentic Artwork (Visible in Audio Mode) */}
             <div 
               className={`relative w-full h-full transition-opacity duration-200 ${
-                !videoMode && hasAudioStream ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
+                !videoMode ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
               }`}
             >
               <img 
@@ -486,8 +509,20 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               />
               
               {/* Vignette overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
               
+              {/* Quick switch to Video button */}
+              {isYouTube && (
+                <button
+                  onClick={() => setVideoMode(true)}
+                  className="absolute bottom-3 left-3 px-3 py-1.5 rounded-full bg-red-600/80 hover:bg-red-600 backdrop-blur-md text-white text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
+                  title="مشاهدة فيديو كليب الأغنية"
+                >
+                  <Tv className="w-3.5 h-3.5" />
+                  <span>عرض المسرح والفيديو</span>
+                </button>
+              )}
+
               {/* Badge */}
               <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-[10px] font-bold text-zinc-200 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#1ed760] animate-ping" />

@@ -196,8 +196,8 @@ const TRACKS_CATALOG = [
     album: 'البخت (2022)',
     duration: 215,
     coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
+    downloadUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
     genre: 'تراب مصري',
     releaseDate: '2022',
     playCount: '250,000,000',
@@ -213,16 +213,16 @@ const TRACKS_CATALOG = [
     artist: 'ويجز',
     album: 'دورك جي',
     duration: 195,
-    coverUrl: 'https://i.ytimg.com/vi/bav-oRRNU94/hqdefault.jpg',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=R2B9p_sFkH0',
+    downloadUrl: 'https://www.youtube.com/watch?v=R2B9p_sFkH0',
     genre: 'تراب / راب',
     releaseDate: '2020',
     playCount: '165,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'bav-oRRNU94'
+    youtubeId: 'R2B9p_sFkH0'
   },
   {
     id: 'cairokee-basrah',
@@ -232,8 +232,8 @@ const TRACKS_CATALOG = [
     album: 'روما (2022)',
     duration: 240,
     coverUrl: 'https://i.ytimg.com/vi/1xsDmAYVlrs/hqdefault.jpg',
-    streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
-    downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=1xsDmAYVlrs',
+    downloadUrl: 'https://www.youtube.com/watch?v=1xsDmAYVlrs',
     genre: 'روك مصري',
     releaseDate: '2022',
     playCount: '80,000,000',
@@ -250,8 +250,8 @@ const TRACKS_CATALOG = [
     album: 'وسع وسع (2022)',
     duration: 210,
     coverUrl: 'https://i.ytimg.com/vi/aKCL3I5iQ18/hqdefault.jpg',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=aKCL3I5iQ18',
+    downloadUrl: 'https://www.youtube.com/watch?v=aKCL3I5iQ18',
     genre: 'شعبي مودرن',
     releaseDate: '2022',
     playCount: '190,000,000',
@@ -356,7 +356,7 @@ async function searchAudius(query: string): Promise<any[]> {
 
     return tracks.map((item: any) => {
       const durationSeconds = Math.round(item.duration || 180);
-      const artwork = item.artwork?.['480x480'] || item.artwork?.['1000x1000'] || 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
+      const artwork = item.artwork?.['480x480'] || item.artwork?.['1000x1000'] || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23181818"/><circle cx="200" cy="200" r="140" fill="%23121212" stroke="%23282828" stroke-width="4"/><circle cx="200" cy="200" r="60" fill="%231ed760"/><circle cx="200" cy="200" r="16" fill="%23111111"/></svg>';
       const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${item.id}/stream?app_name=NAGHAMAT_APP`;
 
       return {

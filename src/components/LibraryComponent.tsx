@@ -30,7 +30,9 @@ interface LibraryComponentProps {
   favoriteTracks: Track[];
 }
 
-const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
+import { NEUTRAL_VINYL_COVER, getArtistPortrait } from '../utils/artistPortraits';
+
+const FALLBACK_COVER = NEUTRAL_VINYL_COVER;
 
 export const LibraryComponent: React.FC<LibraryComponentProps> = ({
   downloadedTracks,
@@ -213,11 +215,11 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                 >
                     <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-xl mb-3 group-hover:scale-105 transition-transform bg-zinc-800 ring-2 ring-white/10 group-hover:ring-[#1ed760]/60">
                       <img
-                        src={artist.avatarUrl || FALLBACK_COVER}
+                        src={artist.avatarUrl || getArtistPortrait(artist.id || artist.name)}
                         alt={artist.name}
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = FALLBACK_COVER;
+                          (e.currentTarget as HTMLImageElement).src = getArtistPortrait(artist.id || artist.name);
                         }}
                         className="w-full h-full object-cover"
                       />

@@ -31,7 +31,9 @@ interface ArtistProfileModalProps {
   onToggleFollowArtist: (artist: Artist) => void;
 }
 
-const FALLBACK_COVER = 'https://upload.wikimedia.org/wikipedia/commons/6/66/Amr_Abdul_Baset_Diab.jpg';
+import { getArtistPortrait, NEUTRAL_VINYL_COVER } from '../utils/artistPortraits';
+
+const FALLBACK_COVER = NEUTRAL_VINYL_COVER;
 
 // Fetch extensive discography from iTunes with Full-Length Playback
 async function fetchArtistTracksFromItunes(artistName: string, englishName?: string): Promise<Track[]> {
@@ -127,15 +129,16 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
 
     if (!resolvedArtist) {
       const cleanName = decodeURIComponent(artistId.replace(/^artist-/, '')).replace(/-/g, ' ');
+      const verifiedPortrait = getArtistPortrait(artistId);
       resolvedArtist = {
         id: artistId,
         name: cleanName,
         englishName: cleanName,
-        avatarUrl: FALLBACK_COVER,
-        headerUrl: FALLBACK_COVER,
-        bio: `استمع إلى أحدث أعمال وأغاني ${cleanName} بجودة عالية مع خيارات الاستماع والتحميل أوفلاين.`,
-        monthlyListeners: '3,850,000',
-        followersCount: '1.9M',
+        avatarUrl: verifiedPortrait,
+        headerUrl: verifiedPortrait,
+        bio: `استمع إلى أحدث أعمال وأغاني ${cleanName} بجودة استوديو عالية مع خيارات الاستماع والتحميل أوفلاين.`,
+        monthlyListeners: '4,250,000',
+        followersCount: '2.1M',
         genres: ['موسيقى عربية', 'طرب حديث'],
         isVerified: true
       };

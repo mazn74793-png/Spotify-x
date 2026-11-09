@@ -346,14 +346,15 @@ const TRACKS_CATALOG = [
     album: 'تتر حكاية حياة',
     duration: 250,
     coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/49/%D8%B4%D9%8A%D8%B1%D9%8A%D9%86.jpg',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=Z9k7qPZ0LwM',
+    downloadUrl: 'https://www.youtube.com/watch?v=Z9k7qPZ0LwM',
     genre: 'رومانسي / دراما',
     releaseDate: '2013',
     playCount: '98,700,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'youtube',
+    youtubeId: 'Z9k7qPZ0LwM'
   },
   {
     id: 'sherine-kadabeen',
@@ -362,15 +363,16 @@ const TRACKS_CATALOG = [
     artist: 'شيرين عبد الوهاب',
     album: 'نساي (2018)',
     duration: 220,
-    coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://cdn.freesound.org/previews/689/689728_11861866-lq.mp3',
-    downloadUrl: 'https://cdn.freesound.org/previews/689/689728_11861866-lq.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/49/%D8%B4%D9%8A%D8%B1%D9%8A%D9%86.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=4YV1k4XoK00',
+    downloadUrl: 'https://www.youtube.com/watch?v=4YV1k4XoK00',
     genre: 'بوب مصري',
     releaseDate: '2018',
     playCount: '74,200,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'youtube',
+    youtubeId: '4YV1k4XoK00'
   },
 
   // Tamer Hosny tracks
@@ -382,14 +384,15 @@ const TRACKS_CATALOG = [
     album: 'عيني بتحبك (2006)',
     duration: 235,
     coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Tamer_Hosny%27s_NYE_Concert_%282025%29_%28cropped%29.png',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=sJq7y7r28P8',
+    downloadUrl: 'https://www.youtube.com/watch?v=sJq7y7r28P8',
     genre: 'بوب شبابي',
     releaseDate: '2006',
     playCount: '89,400,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'youtube',
+    youtubeId: 'sJq7y7r28P8'
   },
   {
     id: 'tamer-eesh',
@@ -398,15 +401,16 @@ const TRACKS_CATALOG = [
     artist: 'تامر حسني',
     album: 'عيش بشوقك (2018)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://cdn.freesound.org/previews/682/682914_11861866-lq.mp3',
-    downloadUrl: 'https://cdn.freesound.org/previews/682/682914_11861866-lq.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Tamer_Hosny%27s_NYE_Concert_%282025%29_%28cropped%29.png',
+    streamUrl: 'https://www.youtube.com/watch?v=1w4q1m0NqE0',
+    downloadUrl: 'https://www.youtube.com/watch?v=1w4q1m0NqE0',
     genre: 'حماسي',
     releaseDate: '2018',
     playCount: '130,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'youtube',
+    youtubeId: '1w4q1m0NqE0'
   },
 
   // Hamaki tracks
@@ -418,14 +422,15 @@ const TRACKS_CATALOG = [
     album: 'كل يوم من ده (2019)',
     duration: 230,
     coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Mohamed_Hamaki_2.jpg',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://www.youtube.com/watch?v=aV0pP3y7wM0',
+    downloadUrl: 'https://www.youtube.com/watch?v=aV0pP3y7wM0',
     genre: 'بوب مصري',
     releaseDate: '2019',
     playCount: '124,500,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'youtube',
+    youtubeId: 'aV0pP3y7wM0'
   },
 
   // Umm Kulthum tracks
@@ -444,7 +449,8 @@ const TRACKS_CATALOG = [
     playCount: '35,800,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'catalog',
+    youtubeId: '0Y_qBqM5zJw'
   },
 
   // Abdel Halim tracks
@@ -463,7 +469,8 @@ const TRACKS_CATALOG = [
     playCount: '42,100,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'catalog'
+    source: 'catalog',
+    youtubeId: 'w2VqZ5_kE1Y'
   },
 
   // Wegz tracks
@@ -474,16 +481,16 @@ const TRACKS_CATALOG = [
     artist: 'ويجز',
     album: 'البخت (2022)',
     duration: 215,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
+    downloadUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
     genre: 'تراب مصري',
     releaseDate: '2022',
     playCount: '250,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p1A4e6B7b6Q'
+    youtubeId: '_RHIECWv728'
   },
   {
     id: 'wegz-dorak',
@@ -492,16 +499,16 @@ const TRACKS_CATALOG = [
     artist: 'ويجز',
     album: 'دورك جي',
     duration: 195,
-    coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Wegz_2023.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=R2B9p_sFkH0',
+    downloadUrl: 'https://www.youtube.com/watch?v=R2B9p_sFkH0',
     genre: 'تراب / راب',
     releaseDate: '2020',
     playCount: '165,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'qN_8HlZ2y8s'
+    youtubeId: 'R2B9p_sFkH0'
   },
 
   // Cairokee tracks
@@ -512,16 +519,16 @@ const TRACKS_CATALOG = [
     artist: 'كايروكي',
     album: 'روما (2022)',
     duration: 240,
-    coverUrl: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
-    downloadUrl: 'https://archive.org/download/f4ed061e-b902-4dd9-b1c6-6aa12b868eb5/0d6810e2-1512-4b99-bf34-be092b954ac0.mp3',
+    coverUrl: 'https://i.ytimg.com/vi/1xsDmAYVlrs/hqdefault.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=1xsDmAYVlrs',
+    downloadUrl: 'https://www.youtube.com/watch?v=1xsDmAYVlrs',
     genre: 'روك مصري',
     releaseDate: '2022',
     playCount: '80,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'v1A5e6B7b7Q'
+    youtubeId: '1xsDmAYVlrs'
   },
 
   // Ahmed Saad tracks
@@ -532,16 +539,16 @@ const TRACKS_CATALOG = [
     artist: 'أحمد سعد',
     album: 'وسع وسع (2022)',
     duration: 210,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    coverUrl: 'https://i.ytimg.com/vi/aKCL3I5iQ18/hqdefault.jpg',
+    streamUrl: 'https://www.youtube.com/watch?v=aKCL3I5iQ18',
+    downloadUrl: 'https://www.youtube.com/watch?v=aKCL3I5iQ18',
     genre: 'شعبي مودرن',
     releaseDate: '2022',
     playCount: '190,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p2A4e6B7b8Q'
+    youtubeId: 'aKCL3I5iQ18'
   },
   {
     id: 'saad-ekhtiyarati',
@@ -550,16 +557,16 @@ const TRACKS_CATALOG = [
     artist: 'أحمد سعد',
     album: 'فيلم مستر إكس (2023)',
     duration: 185,
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Ahmed_Saad.png',
+    streamUrl: 'https://www.youtube.com/watch?v=Dqy3y9Pq4yY',
+    downloadUrl: 'https://www.youtube.com/watch?v=Dqy3y9Pq4yY',
     genre: 'بوب شعبي',
     releaseDate: '2023',
     playCount: '140,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
     source: 'youtube',
-    youtubeId: 'p3A4e6B7b9Q'
+    youtubeId: 'Dqy3y9Pq4yY'
   },
 
   // The Weeknd tracks
@@ -821,11 +828,11 @@ app.get(['/api/trending', '/trending'], (_req: Request, res: Response) => {
     featured: TRACKS_CATALOG,
     artists: ARTISTS_DATABASE,
     genres: [
-      { id: 'arabic', name: 'طرب وبوب عربي', icon: '🎵', count: 64 },
-      { id: 'pop', name: 'Pop & International', icon: '🌍', count: 120 },
-      { id: 'lofi', name: 'لو فاي واسترخاء (Lo-Fi)', icon: '☕', count: 42 },
-      { id: 'remix', name: 'ريمكس وسهرات DJ', icon: '🔥', count: 55 },
-      { id: 'classic', name: 'عود وموسيقى شرقية', icon: '🎻', count: 38 },
+      { id: 'arabic', name: 'طرب وبوب عربي', icon: 'arabic', count: 64 },
+      { id: 'pop', name: 'Pop & International', icon: 'pop', count: 120 },
+      { id: 'lofi', name: 'لو فاي واسترخاء (Lo-Fi)', icon: 'lofi', count: 42 },
+      { id: 'remix', name: 'ريمكس وسهرات DJ', icon: 'remix', count: 55 },
+      { id: 'classic', name: 'عود وموسيقى شرقية', icon: 'classic', count: 38 },
     ]
   });
 });
