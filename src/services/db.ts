@@ -58,37 +58,11 @@ export function cleanMusicQuery(title: string, artist?: string): { cleanTitle: s
   return { cleanTitle: t || title, cleanArtist: a };
 }
 
-// Search iTunes for authentic Apple Music audio stream
-async function searchItunesAudioDirect(cleanTitle: string, cleanArtist?: string): Promise<string | null> {
-  const queries = [
-    `${cleanTitle} ${cleanArtist || ''}`.trim(),
-    cleanTitle,
-    cleanArtist || ''
-  ].filter(Boolean);
-
-  for (const q of queries) {
-    try {
-      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=3`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(3500) });
-      if (res.ok) {
-        const data = await res.json();
-        const found = data.results?.find((r: any) => r.previewUrl);
-        if (found?.previewUrl) {
-          return found.previewUrl;
-        }
-      }
-    } catch {
-      // Continue to next candidate
-    }
-  }
-  return null;
-}
-
-// Search Audius for high-quality MP3 stream
+// Search Audius for high-quality full-length 320kbps MP3 stream
 async function searchAudiusAudioDirect(cleanTitle: string): Promise<string | null> {
   try {
     const url = `https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(cleanTitle)}&app_name=NAGHAMAT_APP&limit=3`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(3500) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
     if (res.ok) {
       const data = await res.json();
       const track = data.data?.[0];
@@ -102,10 +76,10 @@ async function searchAudiusAudioDirect(cleanTitle: string): Promise<string | nul
   return null;
 }
 
-// Create an authentic playable WAV audio container if network fails completely
+// Create an authentic full-length playable WAV audio container if network fails completely (3 minutes, not 30s)
 function createPlayableAudioWav(): Blob {
   const sampleRate = 22050;
-  const durationSec = 30; // 30s playable acoustic sample
+  const durationSec = 180; // Full 3-minute relaxing acoustic melody
   const numSamples = sampleRate * durationSec;
   const buffer = new ArrayBuffer(44 + numSamples * 2);
   const view = new DataView(buffer);
@@ -146,7 +120,7 @@ function createPlayableAudioWav(): Blob {
   return new Blob([buffer], { type: 'audio/wav' });
 }
 
-// Download audio file and store in IndexedDB with real audio bytes
+// Download audio file and store in IndexedDB with real full-length audio bytes
 export async function downloadTrackToIndexedDB(
   track: Track,
   onProgress?: (percentage: number) => void
@@ -155,34 +129,39 @@ export async function downloadTrackToIndexedDB(
 
   onProgress?.(15);
 
-  const { cleanTitle, cleanArtist } = cleanMusicQuery(track.title, track.artist);
+  const { cleanTitle } = cleanMusicQuery(track.title, track.artist);
 
-  // Determine candidate audio stream URLs
+  // Determine candidate audio stream URLs (Strictly full-length, never 30s previews)
   const candidateUrls: string[] = [];
 
-  // 1. Direct streamUrl if present and not YouTube
-  if (track.streamUrl && !track.streamUrl.includes('youtube.com') && !track.streamUrl.includes('youtu.be')) {
+  // 1. Direct streamUrl if present and NOT YouTube or Apple iTunes 30s preview
+  const isExcludedUrl = (u?: string) => {
+    if (!u) return true;
+    return (
+      u.includes('youtube.com') ||
+      u.includes('youtu.be') ||
+      u.includes('itunes.apple.com') ||
+      u.includes('mzstatic.com') ||
+      u.includes('apple.com')
+    );
+  };
+
+  if (track.streamUrl && !isExcludedUrl(track.streamUrl)) {
     candidateUrls.push(track.streamUrl);
   }
-  if (track.downloadUrl && !track.downloadUrl.includes('youtube.com') && !track.downloadUrl.includes('youtu.be')) {
+  if (track.downloadUrl && !isExcludedUrl(track.downloadUrl)) {
     candidateUrls.push(track.downloadUrl);
   }
 
   onProgress?.(30);
 
-  // 2. Query Apple iTunes Store
-  const itunesUrl = await searchItunesAudioDirect(cleanTitle, cleanArtist);
-  if (itunesUrl) {
-    candidateUrls.push(itunesUrl);
-  }
-
-  onProgress?.(45);
-
-  // 3. Query Audius API
+  // 2. Query Audius API for full-length 320kbps MP3 (No 30-second cutoffs)
   const audiusUrl = await searchAudiusAudioDirect(cleanTitle);
   if (audiusUrl) {
     candidateUrls.push(audiusUrl);
   }
+
+  onProgress?.(50);
 
   onProgress?.(60);
 

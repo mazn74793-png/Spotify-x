@@ -135,7 +135,9 @@ export function useAudioPlayer() {
         setIsLoading(false);
         return;
       }
-      if (audio.duration && !isNaN(audio.duration) && audio.duration > 2) {
+      // Strictly guard: Only overwrite duration if audio file is genuinely full-length (> 50s)
+      // Never allow a 30s preview snippet to shorten our 3-5 minute song!
+      if (audio.duration && !isNaN(audio.duration) && audio.duration > 50) {
         setDuration(audio.duration);
       }
       setIsLoading(false);
@@ -157,6 +159,13 @@ export function useAudioPlayer() {
       if (src.startsWith('data:')) {
         audio.currentTime = 0;
         audio.play().catch(() => {});
+        return;
+      }
+
+      // CRITICAL ANTI-SKIP GUARD: If audio ends under 45 seconds while track is supposed to be full-length,
+      // it was an incomplete preview or abort — DO NOT auto-skip the song!
+      if (audio.currentTime < 45 && duration > 60) {
+        console.warn('Audio stream ended prematurely (under 45s); preventing false auto-skip.');
         return;
       }
 
@@ -315,19 +324,20 @@ export function useAudioPlayer() {
       setQueueIndex(idx !== -1 ? idx : 0);
     }
 
-    const isYT = track.source === 'youtube' || Boolean(track.youtubeId);
+    const activeTrack = { ...track };
+    const isYT = activeTrack.source === 'youtube' || Boolean(activeTrack.youtubeId);
 
     // Check if song is downloaded offline in IndexedDB
-    let playbackSource = track.streamUrl;
+    let playbackSource = activeTrack.streamUrl;
     let isLocal = false;
 
-    if ((track as DownloadedTrack).localAudioUrl) {
-      playbackSource = (track as DownloadedTrack).localAudioUrl!;
+    if ((activeTrack as DownloadedTrack).localAudioUrl) {
+      playbackSource = (activeTrack as DownloadedTrack).localAudioUrl!;
       isLocal = true;
     } else {
       try {
         const downloaded = await getAllDownloadedTracks();
-        const found = downloaded.find(d => d.id === track.id);
+        const found = downloaded.find(d => d.id === activeTrack.id);
         if (found && found.localAudioUrl) {
           playbackSource = found.localAudioUrl;
           isLocal = true;
@@ -335,6 +345,48 @@ export function useAudioPlayer() {
       } catch (err) {
         console.warn('Could not query offline DB:', err);
       }
+    }
+
+    // Dynamic Full-Length YouTube ID Resolver:
+    // If a track is marked as YouTube but has no video ID yet, fetch the official YouTube ID dynamically
+    if (isYT && !activeTrack.youtubeId && !isLocal) {
+      (async () => {
+        try {
+          const res = await fetch(`/api/resolve-youtube?q=${encodeURIComponent(`${activeTrack.title} ${activeTrack.artist}`)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.youtubeId) {
+              activeTrack.youtubeId = data.youtubeId;
+              if (data.duration && data.duration > 60) {
+                activeTrack.duration = data.duration;
+                setDuration(data.duration);
+              }
+              setCurrentTrack({ ...activeTrack });
+              return;
+            }
+          }
+        } catch {
+          // Fallback to search query
+        }
+
+        try {
+          const searchRes = await fetch(`/api/search?q=${encodeURIComponent(`${activeTrack.title} ${activeTrack.artist}`)}&source=youtube`);
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const yt = searchData?.results?.find((r: any) => r.youtubeId);
+            if (yt?.youtubeId) {
+              activeTrack.youtubeId = yt.youtubeId;
+              if (yt.duration) {
+                activeTrack.duration = yt.duration;
+                setDuration(yt.duration);
+              }
+              setCurrentTrack({ ...activeTrack });
+            }
+          }
+        } catch {
+          // Ignore
+        }
+      })();
     }
 
     // 100% Single-Engine Authority: Guarantee NO double audio playback
@@ -353,8 +405,8 @@ export function useAudioPlayer() {
     }
 
     setIsOfflinePlaying(isLocal);
-    setCurrentTrack(track);
-    setDuration(track.duration || 210);
+    setCurrentTrack(activeTrack);
+    setDuration(activeTrack.duration || 210);
     setCurrentTime(0);
 
     if (audioRef.current && effectiveUrl) {
@@ -489,13 +541,17 @@ export function useAudioPlayer() {
     playTrack(queue[prevIndex]);
   }, [queue, queueIndex, currentTime, playTrack]);
 
-  // Progression timer for YouTube/silent carrier tracks
+  // Progression timer for YouTube/silent carrier tracks (Never premature, full song length)
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
       if (audioRef.current && (!audioRef.current.src || audioRef.current.src.startsWith('data:'))) {
         setCurrentTime(prev => {
-          if (duration > 10 && prev >= duration) {
+          const effectiveDur = Math.max(duration || 0, (currentTrack?.duration || 0), 180);
+          if (prev >= effectiveDur) {
+            if (repeatMode === 'one') {
+              return 0;
+            }
             playNext();
             return 0;
           }
@@ -504,7 +560,7 @@ export function useAudioPlayer() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isPlaying, duration, playNext]);
+  }, [isPlaying, duration, currentTrack?.duration, repeatMode, playNext]);
 
   return {
     currentTrack,

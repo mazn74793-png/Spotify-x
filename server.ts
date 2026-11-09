@@ -671,6 +671,31 @@ async function searchYouTube(query: string): Promise<any[]> {
   }
 }
 
+// Dedicated endpoint to resolve any song title/artist to an authentic full-length YouTube video ID
+app.get(['/api/resolve-youtube', '/resolve-youtube'], async (req: Request, res: Response) => {
+  const query = (req.query.q as string || '').trim();
+  if (!query) {
+    return res.status(400).json({ error: 'Missing query parameter q' });
+  }
+
+  try {
+    const results = await searchYouTube(query);
+    if (results.length > 0) {
+      const bestMatch = results[0];
+      return res.json({
+        success: true,
+        youtubeId: bestMatch.youtubeId,
+        duration: bestMatch.duration || 210,
+        title: bestMatch.title,
+        coverUrl: bestMatch.coverUrl
+      });
+    }
+    return res.json({ success: false, youtubeId: null });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Audius API Scraper: Provides millions of royalty-free full-length 320kbps MP3s
 async function searchAudius(query: string): Promise<any[]> {
   try {

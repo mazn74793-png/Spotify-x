@@ -83,9 +83,27 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSleepMenu, setShowSleepMenu] = useState(false);
   const [videoMode, setVideoMode] = useState(false); // Default to Audio Mode for lockscreen & background play
+  const [resolvedYtId, setResolvedYtId] = useState<string | null>(null);
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const hasAudioStream = Boolean(currentTrack?.streamUrl) || Boolean((currentTrack as any)?.localAudioUrl);
   const isYouTube = Boolean(currentTrack?.source === 'youtube' || currentTrack?.youtubeId);
+
+  // Dynamic YouTube ID resolver if track missing youtubeId
+  useEffect(() => {
+    setResolvedYtId(null);
+    if (currentTrack && isYouTube && !currentTrack.youtubeId && !isOfflinePlaying) {
+      let isMounted = true;
+      fetch(`/api/resolve-youtube?q=${encodeURIComponent(`${currentTrack.title} ${currentTrack.artist}`)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (isMounted && data?.youtubeId) {
+            currentTrack.youtubeId = data.youtubeId;
+            setResolvedYtId(data.youtubeId);
+          }
+        })
+        .catch(() => {});
+      return () => { isMounted = false; };
+    }
+  }, [currentTrack?.id, isYouTube, isOfflinePlaying]);
 
   // Auto-switch mode: For YouTube tracks, enable video theater preview by default so user gets the in-app video experience
   useEffect(() => {
@@ -135,7 +153,9 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     }
   }, [volume, isMuted, isYouTube]);
 
-  // Listen for YouTube player state changes (auto-advance when song ends)
+  const effectiveDuration = duration > 0 ? duration : (currentTrack?.duration || 210);
+
+  // Listen for YouTube player state changes (auto-advance ONLY when song genuinely finishes)
   useEffect(() => {
     if (!isYouTube) return;
 
@@ -143,9 +163,10 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
       try {
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
         if (data && data.event === 'onStateChange' && data.info === 0) {
-          // Guard: Only advance if the track has actually played for at least 10 seconds
-          // to prevent false triggers during iframe initialization or buffering
-          if (currentTime > 10) {
+          // ANTI-SKIP GUARD: Only advance if the song has genuinely finished
+          // (i.e. played within 6s of effectiveDuration, or at least 60s)
+          // Prevents premature auto-skipping during ads or buffering!
+          if (currentTime >= Math.max(30, effectiveDuration - 6)) {
             if (repeatMode === 'one') {
               handleSeek(0);
             } else {
@@ -160,7 +181,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isYouTube, onNext, currentTime, repeatMode]);
+  }, [isYouTube, onNext, currentTime, repeatMode, effectiveDuration]);
 
   if (!currentTrack) return null;
 
@@ -193,13 +214,13 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const effectiveDuration = duration > 0 ? duration : (currentTrack.duration || 210);
   const progressPercent = effectiveDuration > 0 ? (currentTime / effectiveDuration) * 100 : 0;
+  const activeYtId = currentTrack.youtubeId || resolvedYtId;
 
-  // Iframe Source: embed with video ID or search embed fallback
-  const iframeSrc = currentTrack.youtubeId
-    ? `https://www.youtube-nocookie.com/embed/${currentTrack.youtubeId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}&controls=1&rel=0&playsinline=1`
-    : `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(`${currentTrack.title} ${currentTrack.artist}`)}&autoplay=1&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}&controls=1&playsinline=1`;
+  // Iframe Source: embed with authentic full video ID
+  const iframeSrc = activeYtId
+    ? `https://www.youtube-nocookie.com/embed/${activeYtId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}&controls=1&rel=0&playsinline=1`
+    : '';
 
   return (
     <>
@@ -488,14 +509,22 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
                   videoMode ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <iframe
-                  ref={ytIframeRef}
-                  src={iframeSrc}
-                  title={currentTrack.title}
-                  className="w-full h-full border-0 rounded-3xl"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                {iframeSrc ? (
+                  <iframe
+                    ref={ytIframeRef}
+                    src={iframeSrc}
+                    title={currentTrack.title}
+                    className="w-full h-full border-0 rounded-3xl"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-black/90 text-white gap-3 p-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#1ed760]" />
+                    <p className="text-sm font-bold">جارٍ تحضير الفيديو الكامل...</p>
+                    <p className="text-xs text-zinc-400">{currentTrack.title} - {currentTrack.artist}</p>
+                  </div>
+                )}
               </div>
             )}
 

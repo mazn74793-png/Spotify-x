@@ -66,15 +66,15 @@ async function fetchItunesDirect(term: string, source: 'all' | 'youtube' | 'audi
         album: item.collectionName || 'ألبوم رسمي',
         duration: Math.round((item.trackTimeMillis || 210000) / 1000),
         coverUrl: (item.artworkUrl100 || '').replace('100x100bb', '600x600bb') || FALLBACK_COVER,
-        streamUrl: item.previewUrl || '',
-        downloadUrl: item.previewUrl || '',
+        streamUrl: '', // NEVER use 30s iTunes snippet! Full-length YouTube or Audius will play
+        downloadUrl: '',
         genre: item.primaryGenreName || 'أغنية كاملة',
         releaseDate: (item.releaseDate || '').split('T')[0] || '2024',
         playCount: `${Math.floor(Math.random() * 80 + 20)},000`,
         bitrate: 'Full Audio HD',
         isFullLength: true,
         source: 'youtube', // Routes to full-length song playback
-        youtubeId: undefined // Triggers dynamic search for the complete official video/audio
+        youtubeId: undefined // Resolved dynamically to official YouTube video
       };
     });
   } catch {

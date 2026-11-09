@@ -53,8 +53,8 @@ async function fetchArtistTracksFromItunes(artistName: string, englishName?: str
         album: item.collectionName || 'ألبوم رسمي',
         duration: Math.round((item.trackTimeMillis || 210000) / 1000),
         coverUrl: (item.artworkUrl100 || '').replace('100x100bb', '600x600bb') || FALLBACK_COVER,
-        streamUrl: item.previewUrl || '',
-        downloadUrl: item.previewUrl || '',
+        streamUrl: '', // NEVER use 30s iTunes snippet! Full-length YouTube video will play
+        downloadUrl: '',
         genre: item.primaryGenreName || 'أغنية كاملة',
         releaseDate: (item.releaseDate || '').split('T')[0] || '2024',
         playCount: `${Math.floor(Math.random() * 80 + 20)},000`,
@@ -160,19 +160,32 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
         ]);
 
         let backendTracks: Track[] = [];
+        let ytSearchTracks: Track[] = [];
+
         try {
-          const res = await fetch(`/api/artists/${artistId}`);
-          if (res.ok) {
-            const data = await res.json();
+          const [artistRes, ytRes] = await Promise.all([
+            fetch(`/api/artists/${artistId}`).catch(() => null),
+            fetch(`/api/search?q=${encodeURIComponent(artistName)}&source=youtube`).catch(() => null)
+          ]);
+
+          if (artistRes && artistRes.ok) {
+            const data = await artistRes.json();
             if (data?.tracks && Array.isArray(data.tracks)) {
               backendTracks = data.tracks;
+            }
+          }
+
+          if (ytRes && ytRes.ok) {
+            const ytData = await ytRes.json();
+            if (ytData?.results && Array.isArray(ytData.results)) {
+              ytSearchTracks = ytData.results;
             }
           }
         } catch {
           // Backend may be offline on static hosting
         }
 
-        // Deduplicate and combine all tracks
+        // Deduplicate and combine all tracks (Prioritize real full-length YouTube & Catalog tracks)
         const seen = new Set<string>();
         const merged: Track[] = [];
 
@@ -189,8 +202,9 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
 
         (local?.tracks || []).forEach(addTrack);
         backendTracks.forEach(addTrack);
-        itunesTracks.forEach(addTrack);
+        ytSearchTracks.forEach(addTrack);
         audiusTracks.forEach(addTrack);
+        itunesTracks.forEach(addTrack);
 
         if (merged.length > 0) {
           setTracks(merged);
