@@ -20,7 +20,8 @@ import {
   Coffee,
   Disc3,
   History,
-  Repeat
+  Repeat,
+  ListPlus
 } from 'lucide-react';
 
 interface HomeComponentProps {
@@ -33,6 +34,7 @@ interface HomeComponentProps {
   onGoToLibrary: () => void;
   onOpenInstallModal: () => void;
   onOpenArtist: (artistId: string) => void;
+  onAddToQueue?: (track: Track) => void;
 }
 
 import { NEUTRAL_VINYL_COVER, getArtistPortrait } from '../utils/artistPortraits';
@@ -87,6 +89,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   onGoToSearch,
   onOpenInstallModal,
   onOpenArtist,
+  onAddToQueue,
 }) => {
   const [featured, setFeatured] = useState<Track[]>(DEFAULT_TRACKS);
   const [artists, setArtists] = useState<Artist[]>(DEFAULT_ARTISTS);
@@ -220,8 +223,20 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                 </p>
               </div>
 
-              {/* Floating Green Play Button on Hover */}
-              <div className="ml-3 sm:ml-4 shrink-0 pr-1">
+              {/* Action Buttons */}
+              <div className="ml-2 sm:ml-3 shrink-0 flex items-center gap-1.5 pr-1">
+                {onAddToQueue && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToQueue(track);
+                    }}
+                    title="إضافة للتالي في قائمة الانتظار"
+                    className="w-8 h-8 rounded-full bg-black/40 hover:bg-[#1ed760]/20 text-zinc-400 hover:text-[#1ed760] hidden group-hover:flex items-center justify-center transition-all"
+                  >
+                    <ListPlus className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#1ed760] hover:bg-[#1fdf64] text-black shadow-2xl items-center justify-center transition-all ${
                     isCurrentPlaying 
@@ -303,17 +318,31 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                     <span className="text-[10px] text-zinc-500 font-mono">
                       {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownloadTrack(track);
-                      }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
-                      }`}
-                    >
-                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {onAddToQueue && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToQueue(track);
+                          }}
+                          title="إضافة للتالي في قائمة الانتظار"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-[#1ed760] hover:bg-white/5 transition-colors"
+                        >
+                          <ListPlus className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDownloadTrack(track);
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -387,17 +416,31 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                     <span className="text-[10px] text-zinc-500 font-mono">
                       {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownloadTrack(track);
-                      }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
-                      }`}
-                    >
-                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {onAddToQueue && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToQueue(track);
+                          }}
+                          title="إضافة للتالي في قائمة الانتظار"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-[#1ed760] hover:bg-white/5 transition-colors"
+                        >
+                          <ListPlus className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDownloadTrack(track);
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -463,17 +506,31 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                     <span className="text-[10px] text-zinc-500 font-mono">
                       {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownloadTrack(track);
-                      }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
-                      }`}
-                    >
-                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {onAddToQueue && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToQueue(track);
+                          }}
+                          title="إضافة للتالي في قائمة الانتظار"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-[#1ed760] hover:bg-white/5 transition-colors"
+                        >
+                          <ListPlus className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDownloadTrack(track);
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -669,18 +726,32 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                     {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
                   </span>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDownloadTrack(track);
-                    }}
-                    title={isDownloaded ? 'محفوظ أوفلاين' : 'تحميل أوفلاين'}
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
-                    }`}
-                  >
-                    {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {onAddToQueue && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToQueue(track);
+                        }}
+                        title="إضافة للتالي في قائمة الانتظار"
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-[#1ed760] hover:bg-white/5 transition-colors"
+                      >
+                        <ListPlus className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDownloadTrack(track);
+                      }}
+                      title={isDownloaded ? 'محفوظ أوفلاين' : 'تحميل أوفلاين'}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isDownloaded ? 'text-[#1ed760]' : 'text-zinc-500 hover:text-white'
+                      }`}
+                    >
+                      {isDownloaded ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
             );

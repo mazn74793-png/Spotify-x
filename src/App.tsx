@@ -23,12 +23,14 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { OfflineBanner } from './components/OfflineBanner';
 import { recordTrackPlay } from './services/recommendationEngine';
 import confetti from 'canvas-confetti';
+import { ListPlus } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Connectivity
   const isOnline = useOnlineStatus();
@@ -46,6 +48,15 @@ export default function App() {
     isShuffle,
     isOfflinePlaying,
     sleepTimer,
+    playbackRate,
+    setPlaybackRate,
+    jumpForward,
+    jumpBackward,
+    queue,
+    queueIndex,
+    playQueueIndex,
+    removeFromQueue,
+    addToQueueNext,
     playTrack,
     togglePlay,
     seek,
@@ -58,6 +69,15 @@ export default function App() {
     setTimer,
     userProfile,
   } = useAudioPlayer();
+
+  // Add to Queue with sleek toast feedback
+  const handleAddToQueue = useCallback((track: Track) => {
+    addToQueueNext(track);
+    setToastMessage(`تمت إضافة "${track.title}" إلى قائمة التشغيل`);
+    setTimeout(() => {
+      setToastMessage((curr) => (curr?.includes(track.title) ? null : curr));
+    }, 2500);
+  }, [addToQueueNext]);
 
   // Smart Play Handler that feeds the recommendation engine
   const handlePlayTrack = useCallback((track: Track, queue: Track[] = []) => {
@@ -229,6 +249,7 @@ export default function App() {
             onGoToLibrary={() => setActiveTab('library')}
             onOpenInstallModal={() => setIsInstallModalOpen(true)}
             onOpenArtist={(artistId) => setSelectedArtistId(artistId)}
+            onAddToQueue={handleAddToQueue}
           />
         )}
 
@@ -245,6 +266,7 @@ export default function App() {
             onOpenArtist={(artistId) => setSelectedArtistId(artistId)}
             followedArtistIds={followedArtistIds}
             onToggleFollowArtist={handleToggleFollowArtist}
+            onAddToQueue={handleAddToQueue}
           />
         )}
 
@@ -261,6 +283,7 @@ export default function App() {
             followedArtists={followedArtists}
             onOpenArtist={(artistId) => setSelectedArtistId(artistId)}
             favoriteTracks={favoriteTracks}
+            onAddToQueue={handleAddToQueue}
           />
         )}
 
@@ -284,6 +307,15 @@ export default function App() {
         sleepTimer={sleepTimer}
         downloadedIds={downloadedIds}
         downloadingIds={downloadingIds}
+        playbackRate={playbackRate}
+        onSetPlaybackRate={setPlaybackRate}
+        onJumpForward={jumpForward}
+        onJumpBackward={jumpBackward}
+        queue={queue}
+        queueIndex={queueIndex}
+        onPlayQueueIndex={playQueueIndex}
+        onRemoveFromQueue={removeFromQueue}
+        userProfile={userProfile}
         onTogglePlay={togglePlay}
         onSeek={seek}
         onNext={playNext}
@@ -319,6 +351,7 @@ export default function App() {
           onToggleFavorite={handleToggleFavorite}
           followedArtistIds={followedArtistIds}
           onToggleFollowArtist={handleToggleFollowArtist}
+          onAddToQueue={handleAddToQueue}
         />
       )}
 
@@ -339,6 +372,16 @@ export default function App() {
         storageUsedText={`${(storageInfo.usedBytes / (1024 * 1024)).toFixed(1)} MB`}
         onClearStorage={handleClearAllDownloads}
       />
+
+      {/* 9. Sleek Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="bg-[#1ed760] text-black font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-black/10">
+            <ListPlus className="w-4 h-4 text-black shrink-0" />
+            <span className="truncate max-w-xs">{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

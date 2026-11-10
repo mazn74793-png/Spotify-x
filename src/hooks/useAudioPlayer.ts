@@ -24,6 +24,7 @@ export function useAudioPlayer() {
   const [isOfflinePlaying, setIsOfflinePlaying] = useState<boolean>(false);
   const [sleepTimer, setSleepTimer] = useState<number | null>(null);
   const [sleepTimerEndTime, setSleepTimerEndTime] = useState<number | null>(null);
+  const [playbackRate, setPlaybackRateState] = useState<number>(1);
   const [userProfile, setUserProfile] = useState(getUserProfile());
 
   // Listen to profile updates (e.g. equalizer preset, background playback toggle)
@@ -469,6 +470,59 @@ export function useAudioPlayer() {
     }
   }, []);
 
+  const jumpForward = useCallback((seconds = 10) => {
+    setCurrentTime(prev => {
+      const maxDur = duration > 0 ? duration : (currentTrack?.duration || 210);
+      const target = Math.min(prev + seconds, maxDur);
+      if (audioRef.current && audioRef.current.src) {
+        audioRef.current.currentTime = target;
+      }
+      return target;
+    });
+  }, [duration, currentTrack]);
+
+  const jumpBackward = useCallback((seconds = 10) => {
+    setCurrentTime(prev => {
+      const target = Math.max(prev - seconds, 0);
+      if (audioRef.current && audioRef.current.src) {
+        audioRef.current.currentTime = target;
+      }
+      return target;
+    });
+  }, []);
+
+  const setPlaybackRate = useCallback((rate: number) => {
+    setPlaybackRateState(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  }, []);
+
+  const removeFromQueue = useCallback((indexToRemove: number) => {
+    setQueue(prev => prev.filter((_, i) => i !== indexToRemove));
+    setQueueIndex(prev => {
+      if (indexToRemove < prev) return prev - 1;
+      if (indexToRemove === prev) return Math.max(0, prev - 1);
+      return prev;
+    });
+  }, []);
+
+  const playQueueIndex = useCallback((indexToPlay: number) => {
+    if (indexToPlay >= 0 && indexToPlay < queue.length) {
+      setQueueIndex(indexToPlay);
+      playTrack(queue[indexToPlay]);
+    }
+  }, [queue, playTrack]);
+
+  const addToQueueNext = useCallback((trackToQueue: Track) => {
+    setQueue(prev => {
+      const copy = [...prev];
+      const insertAt = queueIndex >= 0 ? queueIndex + 1 : copy.length;
+      copy.splice(insertAt, 0, trackToQueue);
+      return copy;
+    });
+  }, [queueIndex]);
+
   const setVolume = useCallback((newVolume: number) => {
     const clamped = Math.max(0, Math.min(1, newVolume));
     setVolumeState(clamped);
@@ -577,6 +631,13 @@ export function useAudioPlayer() {
     isOfflinePlaying,
     sleepTimer,
     setTimer,
+    playbackRate,
+    setPlaybackRate,
+    jumpForward,
+    jumpBackward,
+    removeFromQueue,
+    playQueueIndex,
+    addToQueueNext,
     playTrack,
     togglePlay,
     seek,

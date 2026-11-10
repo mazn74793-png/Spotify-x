@@ -12,7 +12,8 @@ import {
   Clock, 
   ArrowLeft,
   FolderDown,
-  UserCheck
+  UserCheck,
+  ListPlus
 } from 'lucide-react';
 import { exportAudioToDevice } from '../services/db';
 
@@ -28,6 +29,7 @@ interface LibraryComponentProps {
   followedArtists: Artist[];
   onOpenArtist: (artistId: string) => void;
   favoriteTracks: Track[];
+  onAddToQueue?: (track: Track) => void;
 }
 
 import { NEUTRAL_VINYL_COVER, getArtistPortrait } from '../utils/artistPortraits';
@@ -46,6 +48,7 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
   followedArtists,
   onOpenArtist,
   favoriteTracks,
+  onAddToQueue,
 }) => {
   const [subTab, setSubTab] = useState<'downloads' | 'artists' | 'favorites'>('downloads');
   const [filterQuery, setFilterQuery] = useState('');
@@ -339,6 +342,16 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
 
                     {/* Duration & Actions */}
                     <div className="flex items-center gap-2 shrink-0">
+                      {onAddToQueue && (
+                        <button
+                          onClick={() => onAddToQueue(track)}
+                          title="إضافة للتالي في قائمة الانتظار"
+                          className="p-1.5 text-zinc-400 hover:text-[#1ed760] transition-colors"
+                        >
+                          <ListPlus className="w-4 h-4" />
+                        </button>
+                      )}
+
                       {/* Export MP3 to device storage */}
                       <button
                         onClick={() => exportAudioToDevice(track)}
@@ -445,9 +458,20 @@ export const LibraryComponent: React.FC<LibraryComponentProps> = ({
                       </div>
                     </div>
 
-                    <span className="text-xs font-mono text-zinc-400 w-12 text-left">
-                      {formatDuration(track.duration)}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {onAddToQueue && (
+                        <button
+                          onClick={() => onAddToQueue(track)}
+                          title="إضافة للتالي في قائمة الانتظار"
+                          className="p-1.5 text-zinc-400 hover:text-[#1ed760] transition-colors"
+                        >
+                          <ListPlus className="w-4 h-4" />
+                        </button>
+                      )}
+                      <span className="text-xs font-mono text-zinc-400 w-12 text-left">
+                        {formatDuration(track.duration)}
+                      </span>
+                    </div>
                   </div>
                 );
               })}

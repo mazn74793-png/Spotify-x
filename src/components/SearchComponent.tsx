@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Sparkles,
   Music2,
-  Tv
+  Tv,
+  ListPlus
 } from 'lucide-react';
 
 interface SearchComponentProps {
@@ -28,6 +29,7 @@ interface SearchComponentProps {
   onOpenArtist: (artistId: string) => void;
   followedArtistIds: Set<string>;
   onToggleFollowArtist: (artist: Artist) => void;
+  onAddToQueue?: (track: Track) => void;
 }
 
 const QUICK_SEARCH_TAGS = [
@@ -124,6 +126,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
   onOpenArtist,
   followedArtistIds,
   onToggleFollowArtist,
+  onAddToQueue,
 }) => {
   const [query, setQuery] = useState('');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'youtube' | 'audius'>('all');
@@ -616,6 +619,16 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
+                    {onAddToQueue && (
+                      <button
+                        onClick={() => onAddToQueue(track)}
+                        className="p-2 rounded-xl transition-all text-zinc-500 hover:text-[#1ed760] hover:bg-white/5"
+                        title="إضافة للتالي في قائمة التشغيل"
+                      >
+                        <ListPlus className="w-4 h-4" />
+                      </button>
+                    )}
+
                     <button
                       onClick={() => onToggleFavorite(track)}
                       className={`p-2 rounded-xl transition-all ${

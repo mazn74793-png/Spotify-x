@@ -67,6 +67,12 @@ input[type="range"]:hover::-webkit-slider-thumb {
   50% { height: 16px; }
 }
 
+@keyframes soundwave-pulse {
+  0% { height: 15%; }
+  50% { height: 95%; }
+  100% { height: 35%; }
+}
+
 .soundwave-bar {
   animation: soundwave 1.2s ease-in-out infinite;
 }

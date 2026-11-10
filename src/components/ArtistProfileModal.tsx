@@ -13,7 +13,8 @@ import {
   Loader2,
   Tv,
   Music2,
-  Sparkles
+  Sparkles,
+  ListPlus
 } from 'lucide-react';
 
 interface ArtistProfileModalProps {
@@ -29,6 +30,7 @@ interface ArtistProfileModalProps {
   onToggleFavorite: (track: Track) => void;
   followedArtistIds: Set<string>;
   onToggleFollowArtist: (artist: Artist) => void;
+  onAddToQueue?: (track: Track) => void;
 }
 
 import { getArtistPortrait, NEUTRAL_VINYL_COVER } from '../utils/artistPortraits';
@@ -113,6 +115,7 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
   onToggleFavorite,
   followedArtistIds,
   onToggleFollowArtist,
+  onAddToQueue,
 }) => {
   const [artist, setArtist] = useState<Artist | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -497,6 +500,17 @@ export const ArtistProfileModal: React.FC<ArtistProfileModalProps> = ({
 
                     {/* Duration & Actions */}
                     <div className="flex items-center gap-3 shrink-0">
+                      {/* Add to Queue button */}
+                      {onAddToQueue && (
+                        <button
+                          onClick={() => onAddToQueue(track)}
+                          className="p-1.5 text-zinc-500 hover:text-[#1ed760] transition-colors"
+                          title="إضافة للتالي في قائمة الانتظار"
+                        >
+                          <ListPlus className="w-4 h-4" />
+                        </button>
+                      )}
+
                       {/* Favorite button */}
                       <button
                         onClick={() => onToggleFavorite(track)}
