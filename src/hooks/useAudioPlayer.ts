@@ -390,18 +390,30 @@ export function useAudioPlayer() {
       })();
     }
 
-    // 100% Single-Engine Authority: Guarantee NO double audio playback
-    // When playing a YouTube track online (!isLocal), the YouTube player is the single audio source.
-    // HTML5 <audio> plays SILENT_CARRIER to keep mobile lockscreen / background session active with zero sound.
-    // When playing an offline downloaded file (isLocal) or direct MP3 (Audius/Catalog without YouTube), HTML5 <audio> plays the real stream.
+    // Check if track has a genuine direct audio stream (MP3, AAC, stream endpoint, or local offline file)
+    const isDirectAudio = Boolean(
+      isLocal ||
+      (playbackSource &&
+       !playbackSource.includes('youtube.com/watch') &&
+       !playbackSource.includes('youtu.be/') &&
+       (playbackSource.includes('/stream') ||
+        playbackSource.includes('archive.org') ||
+        playbackSource.endsWith('.mp3') ||
+        playbackSource.endsWith('.m4a') ||
+        playbackSource.endsWith('.wav') ||
+        playbackSource.startsWith('blob:') ||
+        playbackSource.startsWith('data:')))
+    );
+
     const SILENT_CARRIER = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
-    if (isYT && !isLocal) {
+    // If pure YouTube with no direct audio stream, use silent carrier to keep mobile background MediaSession alive
+    if (!isDirectAudio) {
       playbackSource = SILENT_CARRIER;
     }
 
     let effectiveUrl = playbackSource;
-    if (!isLocal && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:') && !effectiveUrl.startsWith('data:')) {
+    if (!isLocal && isDirectAudio && effectiveUrl && !effectiveUrl.startsWith('/api/') && !effectiveUrl.startsWith('blob:') && !effectiveUrl.startsWith('data:')) {
       effectiveUrl = `/api/proxy-audio?url=${encodeURIComponent(effectiveUrl)}`;
     }
 
@@ -413,9 +425,9 @@ export function useAudioPlayer() {
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
       audioRef.current.loop = effectiveUrl === SILENT_CARRIER;
-      // When playing silent carrier, mute HTML5 audio to be 100% certain it emits zero noise
+      // When playing silent carrier, maintain minute gain (0.001) so mobile OS keeps background audio pipeline open
       if (effectiveUrl === SILENT_CARRIER) {
-        audioRef.current.volume = 0;
+        audioRef.current.volume = 0.001;
       } else {
         audioRef.current.volume = isMuted ? 0 : volume;
       }

@@ -125,6 +125,20 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
   const isYouTube = Boolean(currentTrack?.source === 'youtube' || currentTrack?.youtubeId);
 
+  // Check if track has native direct audio stream
+  const hasDirectAudio = Boolean(
+    isOfflinePlaying ||
+    (currentTrack?.streamUrl &&
+     !currentTrack.streamUrl.includes('youtube.com/watch') &&
+     !currentTrack.streamUrl.includes('youtu.be/') &&
+     (currentTrack.streamUrl.includes('/stream') ||
+      currentTrack.streamUrl.includes('archive.org') ||
+      currentTrack.streamUrl.endsWith('.mp3') ||
+      currentTrack.streamUrl.endsWith('.m4a') ||
+      currentTrack.streamUrl.startsWith('blob:') ||
+      currentTrack.streamUrl.startsWith('data:')))
+  );
+
   // Dynamic YouTube ID resolver if track missing youtubeId
   useEffect(() => {
     setResolvedYtId(null);
@@ -143,14 +157,10 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     }
   }, [currentTrack?.id, isYouTube, isOfflinePlaying]);
 
-  // Auto-switch mode on track change: Default to theater if YouTube, otherwise audio
+  // Keep Audio view as default so user enjoys album art & soundwaves immediately
   useEffect(() => {
-    if (isYouTube && !isOfflinePlaying) {
-      setPlayerViewMode('theater');
-    } else {
-      setPlayerViewMode('audio');
-    }
-  }, [currentTrack?.id, isYouTube, isOfflinePlaying]);
+    setPlayerViewMode('audio');
+  }, [currentTrack?.id]);
 
   // Sync play / pause state to YouTube iframe
   useEffect(() => {
@@ -184,7 +194,8 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   useEffect(() => {
     if (!isYouTube || !ytIframeRef.current) return;
     try {
-      if (isMuted) {
+      // If direct audio is active natively via HTML5 audio, mute YouTube to prevent double audio
+      if (hasDirectAudio || isMuted) {
         ytIframeRef.current.contentWindow?.postMessage(
           JSON.stringify({ event: 'command', func: 'mute', args: '' }),
           '*'
@@ -202,24 +213,58 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     } catch {
       // Ignore cross-origin warnings
     }
-  }, [volume, isMuted, isYouTube]);
+  }, [volume, isMuted, isYouTube, hasDirectAudio]);
 
   const effectiveDuration = duration > 0 ? duration : (currentTrack?.duration || 210);
 
-  // Listen for YouTube player state changes (auto-advance ONLY when song genuinely finishes)
+  // Keep background music alive when user locks screen or leaves app ("لو طلعت برا")
+  useEffect(() => {
+    if (!isYouTube || isOfflinePlaying) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && isPlaying) {
+        // Tab was minimized or phone was locked - reinforce playback
+        try {
+          ytIframeRef.current?.contentWindow?.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo', args: '' }),
+            '*'
+          );
+        } catch {
+          // Ignore
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isPlaying, isYouTube, isOfflinePlaying]);
+
+  // Listen for YouTube player state changes (auto-advance & background lockscreen auto-resume)
   useEffect(() => {
     if (!isYouTube) return;
 
     const handleMessage = (e: MessageEvent) => {
       try {
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-        if (data && data.event === 'onStateChange' && data.info === 0) {
-          // ANTI-SKIP GUARD: Only advance if the song has genuinely finished (within 6s of end)
-          if (currentTime >= Math.max(30, effectiveDuration - 6)) {
-            if (repeatMode === 'one') {
-              handleSeek(0);
-            } else {
-              onNext();
+        if (data && data.event === 'onStateChange') {
+          // If YouTube paused itself because screen was turned off or tab minimized, auto-resume!
+          if (data.info === 2 && isPlaying && document.hidden) {
+            try {
+              ytIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'playVideo', args: '' }),
+                '*'
+              );
+            } catch {
+              // Ignore
+            }
+          } else if (data.info === 0) {
+            // Song genuinely finished
+            if (currentTime >= Math.max(30, effectiveDuration - 6)) {
+              if (repeatMode === 'one') {
+                handleSeek(0);
+              } else {
+                onNext();
+              }
             }
           }
         }
@@ -230,7 +275,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isYouTube, onNext, currentTime, repeatMode, effectiveDuration]);
+  }, [isYouTube, onNext, currentTime, repeatMode, effectiveDuration, isPlaying]);
 
   if (!currentTrack) return null;
 
@@ -321,6 +366,34 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
 
   return (
     <>
+      {/* 
+        Persistent Mounted YouTube Player Engine:
+        Crucial for instant playback and background continuity.
+        Must NEVER be unmounted or given opacity-0, so audio starts immediately
+        the moment any track is selected, even from the mini player docked bar.
+      */}
+      {activeYtId && !isOfflinePlaying && (
+        <div 
+          className={
+            isExpanded && playerViewMode === 'theater'
+              ? 'fixed z-[52] left-1/2 top-[32%] -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-2xl aspect-video rounded-3xl overflow-hidden shadow-2xl border-2 border-white/20 transition-all duration-300'
+              : 'fixed -top-[9999px] left-0 w-[320px] h-[240px] pointer-events-none z-[-1]'
+          }
+        >
+          {iframeSrc ? (
+            <iframe
+              ref={ytIframeRef}
+              key={activeYtId}
+              src={iframeSrc}
+              title={currentTrack.title}
+              className="w-full h-full border-0 rounded-3xl"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : null}
+        </div>
+      )}
+
       {/* 
         ========================================================================
         1. DOCKED MINI-PLAYER BAR (LUXURIOUS SPOTIFY / APPLE MUSIC AESTHETIC)
@@ -590,7 +663,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
         }`}
       >
         {/* Top Bar: Collapse, Title & Segmented Multi-Mode Bar */}
-        <div className="flex items-center justify-between gap-4 max-w-3xl mx-auto w-full pt-2">
+        <div className="relative z-[55] flex items-center justify-between gap-4 max-w-3xl mx-auto w-full pt-2">
           <button
             onClick={() => setIsExpanded(false)}
             className="p-2.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -670,29 +743,12 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
               : 'aspect-square max-w-sm sm:max-w-md border border-white/10'
           }`}>
             
-            {/* View 1: YouTube Theater Iframe */}
-            {isYouTube && (
-              <div 
-                className={`absolute inset-0 w-full h-full transition-opacity duration-200 ${
-                  playerViewMode === 'theater' ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
-                }`}
-              >
-                {iframeSrc ? (
-                  <iframe
-                    ref={ytIframeRef}
-                    src={iframeSrc}
-                    title={currentTrack.title}
-                    className="w-full h-full border-0 rounded-3xl"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-black/90 text-white gap-3 p-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#1ed760]" />
-                    <p className="text-sm font-bold">جارٍ تحضير الفيديو الكامل...</p>
-                    <p className="text-xs text-zinc-400">{currentTrack.title} - {currentTrack.artist}</p>
-                  </div>
-                )}
+            {/* View 1: YouTube Theater Stage Backdrop (Active video iframe mounts at z-[60] directly above) */}
+            {isYouTube && playerViewMode === 'theater' && (
+              <div className="absolute inset-0 w-full h-full bg-black rounded-3xl flex flex-col items-center justify-center text-white gap-3 p-4">
+                <Loader2 className="w-8 h-8 animate-spin text-[#1ed760]" />
+                <p className="text-sm font-bold">جارٍ عرض الفيديو الرسمي...</p>
+                <p className="text-xs text-zinc-400">{currentTrack.title} - {currentTrack.artist}</p>
               </div>
             )}
 
@@ -838,7 +894,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
           </div>
 
           {/* Song Meta Information */}
-          <div className="w-full mt-5 text-right space-y-1">
+          <div className="relative z-[55] w-full mt-5 text-right space-y-1">
             <h2 className="text-xl sm:text-2xl font-black text-white truncate">
               {currentTrack.title}
             </h2>
