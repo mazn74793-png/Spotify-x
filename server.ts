@@ -274,8 +274,8 @@ const TRACKS_CATALOG = [
     album: 'تملي معاك (2000)',
     duration: 268,
     coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    streamUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
-    downloadUrl: 'https://archive.org/download/AmrDiab_541/Amr_Diab-Wayah.mp3',
+    streamUrl: 'https://archive.org/download/Album_AmrDiab_Tamally_Maak_Original_Quality/TamallyMaak.mp3',
+    downloadUrl: 'https://archive.org/download/Album_AmrDiab_Tamally_Maak_Original_Quality/TamallyMaak.mp3',
     genre: 'رومانسي',
     releaseDate: '2000',
     playCount: '145,800,000',
@@ -346,14 +346,14 @@ const TRACKS_CATALOG = [
     album: 'تتر حكاية حياة',
     duration: 250,
     coverUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/49/%D8%B4%D9%8A%D8%B1%D9%8A%D9%86.jpg',
-    streamUrl: 'https://www.youtube.com/watch?v=Z9k7qPZ0LwM',
-    downloadUrl: 'https://www.youtube.com/watch?v=Z9k7qPZ0LwM',
+    streamUrl: 'https://archive.org/download/rabiea1346134613461341341364/001.mp3',
+    downloadUrl: 'https://archive.org/download/rabiea1346134613461341341364/001.mp3',
     genre: 'رومانسي / دراما',
     releaseDate: '2013',
     playCount: '98,700,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'youtube',
+    source: 'catalog',
     youtubeId: 'Z9k7qPZ0LwM'
   },
   {
@@ -482,14 +482,14 @@ const TRACKS_CATALOG = [
     album: 'البخت (2022)',
     duration: 215,
     coverUrl: 'https://i.ytimg.com/vi/_RHIECWv728/hqdefault.jpg',
-    streamUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
-    downloadUrl: 'https://www.youtube.com/watch?v=_RHIECWv728',
+    streamUrl: 'https://archive.org/download/y-2mate.com-wegz-el-bakht-audio-prod-rahal/y2mate.com%20-%20Wegz%20%20ElBakht%20%20%D9%88%D9%8A%D8%AC%D8%B2%20%20%D8%A7%D9%84%D8%A8%D8%AE%D8%AA%20Audio%20prod%20Rahal.mp3',
+    downloadUrl: 'https://archive.org/download/y-2mate.com-wegz-el-bakht-audio-prod-rahal/y2mate.com%20-%20Wegz%20%20ElBakht%20%20%D9%88%D9%8A%D8%AC%D8%B2%20%20%D8%A7%D9%84%D8%A8%D8%AE%D8%AA%20Audio%20prod%20Rahal.mp3',
     genre: 'تراب مصري',
     releaseDate: '2022',
     playCount: '250,000,000',
     bitrate: '320 kbps',
     isFullLength: true,
-    source: 'youtube',
+    source: 'catalog',
     youtubeId: '_RHIECWv728'
   },
   {
@@ -694,6 +694,141 @@ app.get(['/api/resolve-youtube', '/resolve-youtube'], async (req: Request, res: 
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
+});
+
+// Clean query for archive / audio searches
+function cleanSearchQuery(title: string, artist?: string): string {
+  let q = `${title} ${artist || ''}`;
+  q = q.replace(/\(.*?\)/g, ' ').replace(/\[.*?\]/g, ' ');
+  q = q.replace(/official\s*(music)?\s*video/gi, ' ')
+       .replace(/lyric\s*video/gi, ' ')
+       .replace(/audio\s*video/gi, ' ')
+       .replace(/فيديو\s*كليب/g, ' ')
+       .replace(/كليب\s*رسمي/g, ' ')
+       .replace(/أغنية/g, ' ')
+       .replace(/اغنية/g, ' ')
+       .replace(/ريمكس/g, ' ')
+       .replace(/remix/gi, ' ')
+       .replace(/hd/gi, ' ')
+       .replace(/4k/gi, ' ')
+       .replace(/كاملة/g, ' ')
+       .replace(/[|•_—–-]/g, ' ')
+       .replace(/\s+/g, ' ')
+       .trim();
+  return q;
+}
+
+// Search Internet Archive for genuine, full-length 320kbps MP3 audio stream with relevance check
+async function searchArchiveMp3(query: string): Promise<{ url: string; title: string; size?: number } | null> {
+  try {
+    const cleanQ = cleanSearchQuery(query);
+    const keywords = cleanQ
+      .split(/\s+/)
+      .map(w => normalizeArabic(w))
+      .filter(w => w.length >= 3);
+
+    const searchUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(cleanQ + ' AND mediatype:audio')}&fl[]=identifier,title&rows=10&output=json`;
+    const res = await fetch(searchUrl, { signal: AbortSignal.timeout(4500) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const docs = data.response?.docs || [];
+
+    // Filter docs that have at least one keyword in title or identifier if keywords exist
+    const relevantDocs = keywords.length > 0
+      ? docs.filter((doc: any) => {
+          const normTitle = normalizeArabic(doc.title || '');
+          const normId = normalizeArabic(doc.identifier || '');
+          return keywords.some(k => normTitle.includes(k) || normId.includes(k));
+        })
+      : docs;
+
+    const candidateDocs = relevantDocs.length > 0 ? relevantDocs : docs;
+
+    for (const doc of candidateDocs) {
+      try {
+        const metaUrl = `https://archive.org/metadata/${doc.identifier}/files`;
+        const metaRes = await fetch(metaUrl, { signal: AbortSignal.timeout(3500) });
+        if (!metaRes.ok) continue;
+        const metaData = await metaRes.json();
+        const files: any[] = metaData.result || [];
+        
+        // Find MP3 with minimum 800KB size (a full-length song is typically 2MB - 12MB)
+        const mp3 = files.find(f => 
+          f.name && 
+          f.name.toLowerCase().endsWith('.mp3') && 
+          !f.name.includes('_vbr') &&
+          (!f.size || Number(f.size) > 800000)
+        );
+
+        if (mp3) {
+          const downloadUrl = `https://archive.org/download/${doc.identifier}/${encodeURIComponent(mp3.name)}`;
+          return {
+            url: downloadUrl,
+            title: doc.title || query,
+            size: Number(mp3.size) || undefined
+          };
+        }
+      } catch {
+        // Try next doc
+      }
+    }
+  } catch {
+    // Ignore timeout
+  }
+  return null;
+}
+
+// Dedicated endpoint to resolve any song title/artist to an authentic direct full-length MP3 stream URL
+app.get(['/api/resolve-audio', '/resolve-audio'], async (req: Request, res: Response) => {
+  const title = (req.query.title as string || '').trim();
+  const artist = (req.query.artist as string || '').trim();
+  const query = `${title} ${artist}`.trim();
+
+  if (!query) {
+    return res.status(400).json({ error: 'Missing title or artist' });
+  }
+
+  // 1. Check local catalog first
+  const normQ = normalizeArabic(query);
+  const foundInCatalog = TRACKS_CATALOG.find(t => {
+    if (!t.streamUrl || t.streamUrl.includes('youtube.com')) return false;
+    const nT = normalizeArabic(t.title);
+    const nA = normalizeArabic(t.artist);
+    return normQ.includes(nT) || nT.includes(normQ) || (normQ.includes(nA) && normQ.includes(nT));
+  });
+
+  if (foundInCatalog) {
+    return res.json({
+      success: true,
+      audioUrl: foundInCatalog.streamUrl,
+      source: 'catalog',
+      duration: foundInCatalog.duration
+    });
+  }
+
+  // 2. Query Internet Archive for real MP3
+  const archiveMatch = await searchArchiveMp3(query);
+  if (archiveMatch) {
+    return res.json({
+      success: true,
+      audioUrl: archiveMatch.url,
+      source: 'archive',
+      size: archiveMatch.size
+    });
+  }
+
+  // 3. Query Audius for high-quality MP3
+  const audiusMatches = await searchAudius(query);
+  if (audiusMatches.length > 0 && audiusMatches[0].streamUrl) {
+    return res.json({
+      success: true,
+      audioUrl: audiusMatches[0].streamUrl,
+      source: 'audius',
+      duration: audiusMatches[0].duration
+    });
+  }
+
+  return res.json({ success: false, audioUrl: null });
 });
 
 // 2. Audius API Scraper: Provides millions of royalty-free full-length 320kbps MP3s

@@ -150,11 +150,12 @@ export default function App() {
     refreshDownloads();
   }, [refreshDownloads]);
 
-  // Download Handler with celebration
+  // Download Handler with celebration and user toast feedback
   const handleDownloadTrack = async (track: Track) => {
     if (downloadingIds.has(track.id)) return;
 
     setDownloadingIds(prev => new Map(prev).set(track.id, 5));
+    setToastMessage(`جارٍ تنزيل "${track.title}" بجودة استوديو كاملة...`);
 
     try {
       await downloadTrackToIndexedDB(track, (percentage) => {
@@ -168,9 +169,16 @@ export default function App() {
         colors: ['#1ed760', '#ffffff', '#181818']
       });
 
+      setToastMessage(`تم حفظ "${track.title}" في مكتبتك للاستماع أوفلاين`);
+      setTimeout(() => {
+        setToastMessage(curr => (curr?.includes(track.title) ? null : curr));
+      }, 3500);
+
       await refreshDownloads();
     } catch (err: any) {
       console.error('Download failed:', err);
+      setToastMessage(err?.message || 'تعذر تنزيل ملف الصوت، يرجى المحاولة لاحقاً');
+      setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setDownloadingIds(prev => {
         const next = new Map(prev);

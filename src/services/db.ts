@@ -76,51 +76,7 @@ async function searchAudiusAudioDirect(cleanTitle: string): Promise<string | nul
   return null;
 }
 
-// Create an authentic full-length playable WAV audio container if network fails completely (3 minutes, not 30s)
-function createPlayableAudioWav(): Blob {
-  const sampleRate = 22050;
-  const durationSec = 180; // Full 3-minute relaxing acoustic melody
-  const numSamples = sampleRate * durationSec;
-  const buffer = new ArrayBuffer(44 + numSamples * 2);
-  const view = new DataView(buffer);
-
-  // RIFF header
-  const writeString = (offset: number, str: string) => {
-    for (let i = 0; i < str.length; i++) {
-      view.setUint8(offset + i, str.charCodeAt(i));
-    }
-  };
-
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + numSamples * 2, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true); // PCM
-  view.setUint16(22, 1, true); // Mono
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeString(36, 'data');
-  view.setUint32(40, numSamples * 2, true);
-
-  // Generate pleasant acoustic chime melody (C-major / Oriental Maqam Rast pentatonic)
-  const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-  for (let i = 0; i < numSamples; i++) {
-    const t = i / sampleRate;
-    const noteIdx = Math.floor(t * 2) % notes.length;
-    const freq = notes[noteIdx];
-    const decay = Math.exp(-(t % 0.5) * 5);
-    const sample = Math.sin(2 * Math.PI * freq * t) * 0.3 * decay;
-    const intSample = Math.max(-1, Math.min(1, sample)) * 0x7fff;
-    view.setInt16(44 + i * 2, intSample, true);
-  }
-
-  return new Blob([buffer], { type: 'audio/wav' });
-}
-
-// Download audio file and store in IndexedDB with real full-length audio bytes
+// Download genuine audio file and store in IndexedDB with real full-length audio bytes
 export async function downloadTrackToIndexedDB(
   track: Track,
   onProgress?: (percentage: number) => void
@@ -129,12 +85,11 @@ export async function downloadTrackToIndexedDB(
 
   onProgress?.(15);
 
-  const { cleanTitle } = cleanMusicQuery(track.title, track.artist);
+  const { cleanTitle, cleanArtist } = cleanMusicQuery(track.title, track.artist);
 
-  // Determine candidate audio stream URLs (Strictly full-length, never 30s previews)
+  // Determine candidate audio stream URLs (Strictly authentic full-length, never 30s previews)
   const candidateUrls: string[] = [];
 
-  // 1. Direct streamUrl if present and NOT YouTube or Apple iTunes 30s preview
   const isExcludedUrl = (u?: string) => {
     if (!u) return true;
     return (
@@ -146,6 +101,7 @@ export async function downloadTrackToIndexedDB(
     );
   };
 
+  // 1. Direct streamUrl if present and NOT YouTube or Apple iTunes 30s preview
   if (track.streamUrl && !isExcludedUrl(track.streamUrl)) {
     candidateUrls.push(track.streamUrl);
   }
@@ -155,30 +111,53 @@ export async function downloadTrackToIndexedDB(
 
   onProgress?.(30);
 
-  // 2. Query Audius API for full-length 320kbps MP3 (No 30-second cutoffs)
-  const audiusUrl = await searchAudiusAudioDirect(cleanTitle);
-  if (audiusUrl) {
-    candidateUrls.push(audiusUrl);
+  // 2. Query our server audio resolver (searches catalog, Archive.org 320kbps MP3s, Audius)
+  try {
+    const resolveRes = await fetch(`/api/resolve-audio?title=${encodeURIComponent(cleanTitle || track.title)}&artist=${encodeURIComponent(cleanArtist || track.artist || '')}`, {
+      signal: AbortSignal.timeout(6000)
+    });
+    if (resolveRes.ok) {
+      const resolveData = await resolveRes.json();
+      if (resolveData?.success && resolveData?.audioUrl && !candidateUrls.includes(resolveData.audioUrl)) {
+        candidateUrls.unshift(resolveData.audioUrl);
+      }
+    }
+  } catch {
+    // Fallback to direct audius
   }
 
   onProgress?.(50);
 
-  onProgress?.(60);
+  // 3. Fallback: Query Audius API for full-length 320kbps MP3
+  if (candidateUrls.length === 0) {
+    const audiusUrl = await searchAudiusAudioDirect(cleanTitle);
+    if (audiusUrl) {
+      candidateUrls.push(audiusUrl);
+    }
+  }
+
+  onProgress?.(65);
 
   let audioBlob: Blob | null = null;
 
-  // Attempt to fetch audio bytes from candidate sources
+  // Attempt to fetch genuine audio bytes from candidate sources
   for (const url of candidateUrls) {
     try {
-      // Direct fetch first (Apple CDN & Audius CDN support CORS)
-      let res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-      if (!res.ok) {
-        // Fallback to proxy
-        res = await fetch(`/api/proxy-audio?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(6000) });
+      // First try proxy which bypasses CORS and redirects safely
+      const proxyUrl = url.startsWith('/api/') || url.startsWith('blob:') || url.startsWith('data:') 
+        ? url 
+        : `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+      
+      let res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok && !url.startsWith('/api/')) {
+        // Direct fetch fallback
+        res = await fetch(url, { signal: AbortSignal.timeout(10000) });
       }
+
       if (res.ok) {
         const blob = await res.blob();
-        if (blob && blob.size > 15000) {
+        // Verify audio blob has authentic audio size (> 50KB, genuine song file)
+        if (blob && blob.size > 50000) {
           audioBlob = blob;
           break;
         }
@@ -188,11 +167,10 @@ export async function downloadTrackToIndexedDB(
     }
   }
 
-  onProgress?.(80);
+  onProgress?.(85);
 
-  // If no network stream could be fetched, synthesize a genuine playable audio container
-  if (!audioBlob || audioBlob.size < 15000) {
-    audioBlob = createPlayableAudioWav();
+  if (!audioBlob || audioBlob.size < 50000) {
+    throw new Error('عذراً، لم نتمكن من تنزيل ملف الصوت بجودة عالية لهذه الأغنية حالياً. يرجى المحاولة لاحقاً.');
   }
 
   return saveTrackWithBlob(db, track, audioBlob, onProgress);

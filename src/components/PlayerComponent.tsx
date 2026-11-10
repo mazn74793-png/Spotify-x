@@ -166,7 +166,8 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
   useEffect(() => {
     if (!isYouTube || !ytIframeRef.current) return;
     try {
-      const shouldPlayYouTube = isPlaying && !isOfflinePlaying;
+      // When native direct audio is playing and user is not watching the theater video, pause the hidden YouTube iframe
+      const shouldPlayYouTube = isPlaying && !isOfflinePlaying && (!hasDirectAudio || (isExpanded && playerViewMode === 'theater'));
       const command = shouldPlayYouTube ? 'playVideo' : 'pauseVideo';
       ytIframeRef.current.contentWindow?.postMessage(
         JSON.stringify({ event: 'command', func: command, args: '' }),
@@ -175,7 +176,25 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     } catch {
       // Ignore cross-origin warnings
     }
-  }, [isPlaying, isYouTube, isOfflinePlaying]);
+  }, [isPlaying, isYouTube, isOfflinePlaying, hasDirectAudio, isExpanded, playerViewMode]);
+
+  // When theater video mode is activated, sync video scrubber with current audio time
+  useEffect(() => {
+    if (isYouTube && isExpanded && playerViewMode === 'theater' && ytIframeRef.current) {
+      try {
+        ytIframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'seekTo', args: [currentTime, true] }),
+          '*'
+        );
+        ytIframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: '' }),
+          '*'
+        );
+      } catch {
+        // Ignore
+      }
+    }
+  }, [playerViewMode, isExpanded, isYouTube]);
 
   // Sync playback speed to YouTube iframe
   useEffect(() => {

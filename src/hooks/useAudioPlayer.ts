@@ -315,6 +315,8 @@ export function useAudioPlayer() {
     setSleepTimerEndTime(endTime);
   };
 
+  const currentTrackIdRef = useRef<string | null>(null);
+
   // Play track with background audio support and offline storage inspection
   const playTrack = useCallback(async (track: Track, newQueue?: Track[]) => {
     setIsLoading(true);
@@ -326,6 +328,7 @@ export function useAudioPlayer() {
     }
 
     const activeTrack = { ...track };
+    currentTrackIdRef.current = activeTrack.id;
     const isYT = activeTrack.source === 'youtube' || Boolean(activeTrack.youtubeId);
 
     // Check if song is downloaded offline in IndexedDB
@@ -349,14 +352,13 @@ export function useAudioPlayer() {
     }
 
     // Dynamic Full-Length YouTube ID Resolver:
-    // If a track is marked as YouTube but has no video ID yet, fetch the official YouTube ID dynamically
     if (isYT && !activeTrack.youtubeId && !isLocal) {
       (async () => {
         try {
           const res = await fetch(`/api/resolve-youtube?q=${encodeURIComponent(`${activeTrack.title} ${activeTrack.artist}`)}`);
           if (res.ok) {
             const data = await res.json();
-            if (data?.youtubeId) {
+            if (currentTrackIdRef.current === activeTrack.id && data?.youtubeId) {
               activeTrack.youtubeId = data.youtubeId;
               if (data.duration && data.duration > 60) {
                 activeTrack.duration = data.duration;
@@ -375,7 +377,7 @@ export function useAudioPlayer() {
           if (searchRes.ok) {
             const searchData = await searchRes.json();
             const yt = searchData?.results?.find((r: any) => r.youtubeId);
-            if (yt?.youtubeId) {
+            if (currentTrackIdRef.current === activeTrack.id && yt?.youtubeId) {
               activeTrack.youtubeId = yt.youtubeId;
               if (yt.duration) {
                 activeTrack.duration = yt.duration;
@@ -422,6 +424,38 @@ export function useAudioPlayer() {
     setDuration(activeTrack.duration || 210);
     setCurrentTime(0);
 
+    // Dynamic High-Fidelity Audio Resolver:
+    // If track is currently playing via YouTube or lacks direct MP3, resolve authentic stream in background
+    if (!isDirectAudio && !isLocal) {
+      (async () => {
+        try {
+          const resolveRes = await fetch(`/api/resolve-audio?title=${encodeURIComponent(activeTrack.title)}&artist=${encodeURIComponent(activeTrack.artist || '')}`);
+          if (resolveRes.ok) {
+            const resolveData = await resolveRes.json();
+            // Verify user hasn't switched to another track
+            if (currentTrackIdRef.current === activeTrack.id && resolveData?.success && resolveData?.audioUrl) {
+              const directMp3 = resolveData.audioUrl;
+              activeTrack.streamUrl = directMp3;
+              activeTrack.downloadUrl = directMp3;
+              setCurrentTrack({ ...activeTrack });
+
+              const proxyMp3 = `/api/proxy-audio?url=${encodeURIComponent(directMp3)}`;
+              if (audioRef.current) {
+                const currentPos = audioRef.current.currentTime > 0 ? audioRef.current.currentTime : 0;
+                audioRef.current.src = proxyMp3;
+                audioRef.current.loop = false;
+                audioRef.current.volume = isMuted ? 0 : volume;
+                audioRef.current.currentTime = currentPos;
+                audioRef.current.play().catch(() => {});
+              }
+            }
+          }
+        } catch {
+          // Keep silent carrier for YouTube sync
+        }
+      })();
+    }
+
     if (audioRef.current && effectiveUrl) {
       audioRef.current.src = effectiveUrl;
       audioRef.current.loop = effectiveUrl === SILENT_CARRIER;
@@ -456,7 +490,7 @@ export function useAudioPlayer() {
       setIsPlaying(true);
       setIsLoading(false);
     }
-  }, []);
+  }, [volume, isMuted]);
 
   const togglePlay = useCallback(() => {
     if (!currentTrack) return;
